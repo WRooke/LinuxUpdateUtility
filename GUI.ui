@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>551</width>
+    <height>153</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Linux Kernel Update Utility</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>2000px-Tux-simple.svg.png</normaloff>2000px-Tux-simple.svg.png</iconset>
+  </property>
+  <widget class="QWidget" name="formLayoutWidget_2">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>50</y>
+     <width>376</width>
+     <height>91</height>
+    </rect>
+   </property>
+   <layout class="QFormLayout" name="formLayout_2">
+    <property name="sizeConstraint">
+     <enum>QLayout::SetDefaultConstraint</enum>
+    </property>
+    <property name="horizontalSpacing">
+     <number>3</number>
+    </property>
+    <property name="verticalSpacing">
+     <number>3</number>
+    </property>
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_3">
+      <property name="font">
+       <font>
+        <family>Franklin Gothic Medium</family>
+        <pointsize>11</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>RS232 serial port:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QComboBox" name="COMPort"/>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_4">
+      <property name="font">
+       <font>
+        <family>Franklin Gothic Medium</family>
+        <pointsize>11</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Controller IP address:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QLineEdit" name="conIP">
+      <property name="font">
+       <font>
+        <family>Calibri</family>
+        <pointsize>11</pointsize>
+       </font>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QLineEdit" name="PCIP">
+      <property name="font">
+       <font>
+        <family>Calibri</family>
+        <pointsize>11</pointsize>
+       </font>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="QLabel" name="label_5">
+      <property name="font">
+       <font>
+        <family>Franklin Gothic Medium</family>
+        <pointsize>11</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>PC IP address:</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="horizontalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>531</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QLabel" name="label_7">
+      <property name="font">
+       <font>
+        <family>Franklin Gothic Medium</family>
+        <pointsize>11</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Linux kernel location:</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="pathEdit">
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="fileSelect">
+      <property name="text">
+       <string>Select directory</string>
+      </property>
+      <property name="default">
+       <bool>false</bool>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QPushButton" name="goButton">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="text">
+       <string>Load</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <action name="actionrunStuff">
+   <property name="text">
+    <string>runStuff</string>
+   </property>
+  </action>
+ </widget>
+ <tabstops>
+  <tabstop>pathEdit</tabstop>
+  <tabstop>fileSelect</tabstop>
+  <tabstop>conIP</tabstop>
+  <tabstop>PCIP</tabstop>
+  <tabstop>goButton</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>
