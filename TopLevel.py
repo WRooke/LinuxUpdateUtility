@@ -11,11 +11,11 @@
 # python -m PyQt5.uic.pyuic -x [FILENAME].ui -o [FILENAME].py
 
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QFileDialog, QDialog, QApplication
-from PyQt5.QtCore import QObject, pyqtSlot
+from PyQt5.QtCore import pyqtSlot, pyqtSignal, QObject
 from GUI import Ui_Dialog
-from Progress import Ui_Dialog as ProgressDialog
+from Progress import Ui_Form as ProgressDialog
 from PopUp import Ui_PopUpDialog
 # from Updater import runUpdate, InvalidDir
 import sys
@@ -44,7 +44,25 @@ class ProgressClass (QDialog, ProgressDialog):
     super(ProgressClass, self).__init__(parent)
     super().setupUi(self)
 
-class MainWindowUIClass( Ui_Dialog ):
+  def handleChange(self,UpdateText,UpdateNum):
+    self.Status.setText(UpdateText)
+    self.progressBar.setValue(UpdateNum)
+
+class InvalidDir(Exception):
+  pass
+
+class ServerClass(object):
+  def __init__(self, ServerPath):
+    self.ServerPath = ServerPath
+    self.server = tftpy.TftpServer(self.ServerPath)
+  def ServerFunc(self):
+    self.server.listen()
+  def ServerKill(self):
+    self.server.stop()
+
+class MainWindowUIClass( Ui_Dialog, QObject ):
+  loadStatus = pyqtSignal(str,int)
+
   def __init__( self ):
     '''Initialize the super class
     '''
@@ -74,34 +92,50 @@ class MainWindowUIClass( Ui_Dialog ):
     self.pathEdit.setText(filePath)
 
   def generate(self):
-    print('load process started')
     self.goButton.setEnabled(False)
     try:
       if self.conIP.text() == "" or self.PCIP.text() == "":
         raise IPException
       if self.pathEdit.text() == "":
         raise PathException
-      if runUpdate(self.COMPort.currentText(),self.conIP.text(),self.PCIP.text(), self.pathEdit.text()):
-        cheese = QApplication.topLevelWidgets()
-        print(cheese)
+      if self.runUpdate(self.COMPort.currentText(),self.conIP.text(),self.PCIP.text(), self.pathEdit.text()):
+        self.loadStatus.emit("Completed!", 10)
         self.popup("Kernel loaded successfully", "Success")
+        popupThread = Thread(target=self.popup,args=(self,"Kernel loaded successfully", "Success"))
+        popupThread.start()
     except IPException:
-      self.popup("IP address missing\nPlease try again","Error")
+      # self.popup("IP address missing\nPlease try again","Error")
+      popupThread = Thread(target=self.popup, args=(self, "Kernel loaded successfully", "Success"))
+      popupThread.start()
     except PathException:
-      self.popup("Kernel path missing\nPlease try again","Error")
+      # self.popup("Kernel path missing\nPlease try again","Error")
+      popupThread = Thread(target=self.popup, args=("Kernel loaded successfully", "Success"))
+      popupThread.start()
     except serial.SerialException:
-      self.popup("Serial port in use\nClose the port and try again","Error")
+      # self.popup("Serial port in use\nClose the port and try again","Error")
+      # popupThread = Thread(target=self.popup, args=("Kernel loaded successfully", "Success"))
+      # popupThread.daemon = True
+      self.popup("Serial port in use\nClose the port and try again", "Error")
+      # self.genProc.join()
+      # popupThread.start()
     except paramiko.ssh_exception.SSHException:
-      self.popup("Could not connect through SSH\nEnsure the IP address of the controller is correct\nand that is is connected correctly", "Error")
+      # self.popup("Could not connect through SSH\nEnsure the IP address of the controller is correct\nand that is is connected correctly", "Error")
+      popupThread = Thread(target=self.popup, args=(self, "Kernel loaded successfully", "Success"))
+      popupThread.start()
     except InvalidDir:
       self.popup("Directory does not contain Linux Kernel files", "Error")
+      popupThread = Thread(target=self.popup, args=(self, "Kernel loaded successfully", "Success"))
+      popupThread.start()
 
     self.goButton.setEnabled(True)
 
   def threadGo(self):
     self.progProc = Thread(target=self.progressInd,args=())
     self.genProc = Thread(target=self.generate,args=())
+    self.genProc.daemon = True
+    self.progProc.daemon = True
     self.progProc.start()
+    time.sleep(1)
     self.genProc.start()
 
   def popup(self, errorMessage,windowTitle):
@@ -112,12 +146,8 @@ class MainWindowUIClass( Ui_Dialog ):
 
   def progressInd(self):
     widget = ProgressClass()
+    self.loadStatus.connect(widget.handleChange)
     widget.exec_()
-
-  def ServerFunc(ServerPath):
-    server = tftpy.TftpServer(ServerPath)
-    # server = tftpy.TftpServer(tftproot=r'C:\Users\williamr\OneDrive - OEM TECHNOLOGY SOLUTIONS PTY LTD\PC3\070-0767\-5\3-0899V2')
-    server.listen()
 
   def sendTilde(self, serialObject):
     command = '~\n'
@@ -145,20 +175,26 @@ class MainWindowUIClass( Ui_Dialog ):
     time.sleep(0.2)
 
   def runUpdate(self, comPort, conIP, PCIP, kernelPath):
+    self.loadStatus.emit("Loading started",0)
     print(kernelPath)
     newpath = kernelPath.replace('/', '\\')
     if os.path.isfile(os.path.join(newpath, 'ubifs.img')) and os.path.isfile(os.path.join(newpath, 'flash_mmc.img')) and os.path.isfile(os.path.join(newpath, 'flash_eth.img')) and os.path.isfile(os.path.join(newpath, 'flash_blk.img')) and os.path.isfile(os.path.join(newpath, 'configblock.bin')):
       pass
     else:
       raise InvalidDir
-    tftpProcess = Process(target=ServerFunc, args=(newpath,))
+    self.loadStatus.emit("Starting TFTP server", 1)
+    serverino = ServerClass(newpath)
+    tftpProcess = Thread(target=serverino.ServerFunc, args=())
     tftpProcess.start()
+    self.loadStatus.emit("Opening COM Port",1)
     ser = serial.Serial(comPort, 115200, timeout=0.1)
     ser.close()
     ser.open()
+    self.loadStatus.emit("Opening SSH connection", 2)
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.connect(conIP, username='root', password='Netsilicon')
+    self.loadStatus.emit("Rebooting", 2)
     stdin, stdout, stderr = client.exec_command('reboot')
 
     client.close()
@@ -183,13 +219,14 @@ class MainWindowUIClass( Ui_Dialog ):
     self.writeCommand(ser, update3)
     self.writeCommand(ser, update4)
     ser.write(update5.encode())
+    self.loadStatus.emit("Downloading over TFTP", 5)
     while 1:
       out = ser.readline().decode()
       matchUpdate = re.search('enter "run update"*.', out)
       if matchUpdate:
         ser.write(update6.encode())
         break
-
+    self.loadStatus.emit("Rebooting", 7)
     while 1:
       out = ser.readline().decode()
       matchReset = re.search('resetting*.', out)
@@ -198,9 +235,9 @@ class MainWindowUIClass( Ui_Dialog ):
         break
 
     print('sending boot command')
-    writeCommand(ser, newline)
-    writeCommand(ser, newline)
-    writeCommand(ser, boot)
+    self.writeCommand(ser, newline)
+    self.writeCommand(ser, newline)
+    self.writeCommand(ser, boot)
 
     while 1:
       out = ser.readline().decode()
@@ -214,14 +251,14 @@ class MainWindowUIClass( Ui_Dialog ):
           out = ser.readline().decode()
         break
 
-    print('logging in')
-    writeCommand(ser, 'root\n')
-    writeCommand(ser, 'Netsilicon\n')
+    self.loadStatus.emit("Logging in", 8)
+    self.writeCommand(ser, 'root\n')
+    self.writeCommand(ser, 'Netsilicon\n')
     configstr = "ifconfig eth0 " + conIP + "\n"
-    writeCommand(ser, configstr)
-
+    self.writeCommand(ser, configstr)
+    self.loadStatus.emit("Finishing up", 9)
     ser.close()
-    tftpProcess.terminate()
+    serverino.ServerKill()
     return True
 
 if __name__ == '__main__':
