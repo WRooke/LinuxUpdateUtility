@@ -8,7 +8,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+import ImageSources
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -20,7 +20,7 @@ class Ui_Dialog(object):
         sizePolicy.setHeightForWidth(Dialog.sizePolicy().hasHeightForWidth())
         Dialog.setSizePolicy(sizePolicy)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("2000px-Tux-simple.svg.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/Tux/Tux.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         Dialog.setWindowIcon(icon)
         self.formLayoutWidget_2 = QtWidgets.QWidget(Dialog)
         self.formLayoutWidget_2.setGeometry(QtCore.QRect(10, 50, 376, 91))
@@ -116,6 +116,7 @@ class Ui_Dialog(object):
         self.fileSelect.setText(_translate("Dialog", "Select directory"))
         self.goButton.setText(_translate("Dialog", "Load"))
         self.actionrunStuff.setText(_translate("Dialog", "runStuff"))
+import ImageSources
 
 
 if __name__ == "__main__":

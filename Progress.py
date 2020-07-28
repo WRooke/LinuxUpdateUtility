@@ -13,9 +13,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(361, 125)
+        Form.resize(393, 125)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/Tux/Tux.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        Form.setWindowIcon(icon)
         self.verticalLayoutWidget = QtWidgets.QWidget(Form)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(0, 0, 360, 121))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(0, 0, 391, 121))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -25,6 +28,7 @@ class Ui_Form(object):
         font.setFamily("Arial")
         font.setPointSize(20)
         self.label.setFont(font)
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setObjectName("label")
         self.verticalLayout.addWidget(self.label)
         self.Status = QtWidgets.QLabel(self.verticalLayoutWidget)
@@ -39,8 +43,10 @@ class Ui_Form(object):
         self.progressBar.setMinimumSize(QtCore.QSize(0, 30))
         self.progressBar.setMaximum(10)
         self.progressBar.setProperty("value", 0)
+        self.progressBar.setAlignment(QtCore.Qt.AlignCenter)
         self.progressBar.setTextVisible(True)
         self.progressBar.setInvertedAppearance(False)
+        self.progressBar.setTextDirection(QtWidgets.QProgressBar.TopToBottom)
         self.progressBar.setObjectName("progressBar")
         self.verticalLayout.addWidget(self.progressBar)
 
@@ -49,9 +55,10 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Dialog"))
+        Form.setWindowTitle(_translate("Form", "Loading..."))
         self.label.setText(_translate("Form", "Loading Kernel, please wait..."))
-        self.Status.setText(_translate("Form", "DUMMYTEXT"))
+        self.Status.setText(_translate("Form", "Starting..."))
+import ImageSources
 
 
 if __name__ == "__main__":

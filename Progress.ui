@@ -6,19 +6,23 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>361</width>
+    <width>393</width>
     <height>125</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Loading...</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="ImageSources.qrc">
+    <normaloff>:/Tux/Tux.png</normaloff>:/Tux/Tux.png</iconset>
   </property>
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>360</width>
+     <width>391</width>
      <height>121</height>
     </rect>
    </property>
@@ -34,6 +38,9 @@
       <property name="text">
        <string>Loading Kernel, please wait...</string>
       </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
      </widget>
     </item>
     <item>
@@ -45,7 +52,7 @@
        </font>
       </property>
       <property name="text">
-       <string>DUMMYTEXT</string>
+       <string>Starting...</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -66,17 +73,25 @@
       <property name="value">
        <number>0</number>
       </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
       <property name="textVisible">
        <bool>true</bool>
       </property>
       <property name="invertedAppearance">
        <bool>false</bool>
       </property>
+      <property name="textDirection">
+       <enum>QProgressBar::TopToBottom</enum>
+      </property>
      </widget>
     </item>
    </layout>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="ImageSources.qrc"/>
+ </resources>
  <connections/>
 </ui>

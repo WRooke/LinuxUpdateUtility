@@ -1,0 +1,8 @@
+<RCC>
+  <qresource prefix="Tux">
+    <file>Tux.png</file>
+  </qresource>
+  <qresource prefix="Warning">
+    <file>Warning.png</file>
+  </qresource>
+</RCC>
