@@ -13,10 +13,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
+        Form.setWindowModality(QtCore.Qt.ApplicationModal)
         Form.resize(393, 125)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/Tux/Tux.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         Form.setWindowIcon(icon)
+        Form.setModal(True)
         self.verticalLayoutWidget = QtWidgets.QWidget(Form)
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(0, 0, 391, 121))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")

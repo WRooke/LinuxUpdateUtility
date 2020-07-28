@@ -23,7 +23,7 @@ import serial
 import serial.tools.list_ports
 import tftpy
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import pyqtSignal, QObject, QThread
+from PyQt5.QtCore import pyqtSignal, QObject, QThread, Qt
 from PyQt5.QtWidgets import QFileDialog, QDialog
 
 from GUI import Ui_Dialog
@@ -52,6 +52,7 @@ class ProgressClass (QDialog, ProgressDialog):
   def __init__(self, parent=None):
     super(ProgressClass, self).__init__(parent)
     super().setupUi(self)
+    self.setWindowFlags(Qt.CustomizeWindowHint)
 
   def handleChange(self,UpdateText,UpdateNum):
     self.Status.setText(UpdateText)
