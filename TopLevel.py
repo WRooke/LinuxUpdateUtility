@@ -36,6 +36,9 @@ class IPException(Exception):
 class PathException(Exception):
   pass
 
+class TimeoutException(Exception):
+  pass
+
 class PopUpClass (QDialog, Ui_PopUpDialog):
   def __init__(self, parent=None):
     super(PopUpClass, self).__init__(parent)
@@ -61,6 +64,27 @@ class ProgressClass (QDialog, ProgressDialog):
     self.hide()
   def Opener(self):
     self.show()
+
+class TimerClass(object):
+  def __init__(self):
+    self.start = 0
+    self.current = 0
+    self.TimerStarted = False
+
+  def StartTimer(self):
+    self.start = time.time()
+    self.TimerStarted = True
+
+  def StopTimer(self):
+    self.TimerStarted = False
+    self.start = 0
+    self.current = 0
+
+  def CheckTimer(self):
+    self.current = time.time()
+    if (self.current - self.start) > 30:
+      self.TimerStarted = False
+      raise TimeoutException
 
 class UpdateThread(QThread):
   loadStatus = pyqtSignal(str, int)
@@ -109,31 +133,46 @@ class UpdateThread(QThread):
       self.errorMessage.emit("Error", "IP address not valid\nPlease enter a valid IP")
       self.loadPopup.emit()
       self.closeProg.emit()
+    except TimeoutException:
+      ser.close()
+      self.errorMessage.emit("Error", "Serial connection lost\nPlease try again")
+      self.loadPopup.emit()
+      self.closeProg.emit()
 
-  def sendTilde(self, serialObject):
+  def sendTilde(self, serialObject,timer):
     command = '~\n'
     query = 'version\n'
     newline = '\n'
     while 1:
       serialObject.write(command.encode())
-      out = serialObject.readline()
+      out = self.readTimeout(serialObject,timer)
       serialObject.write(query.encode())
-      out = serialObject.readline()
-      decoded = out.decode()
-      match = re.search('Colibri VFxx*.', decoded)
+      out = self.readTimeout(serialObject,timer)
+      match = re.search('Colibri VFxx*.', out)
       if match:
         for i in range(10):
-          out = serialObject.readline().decode()
+          out = self.readTimeout(serialObject,timer)
 
         serialObject.write(newline.encode())
         for i in range(10):
-          out = serialObject.readline().decode()
+          out = self.readTimeout(serialObject,timer)
         break
 
-  def writeCommand(self, serialObject, string):
+  def writeCommand(self, serialObject, string, timer):
     serialObject.write(string.encode())
-    out = serialObject.readline().decode()
+    out = self.readTimeout(serialObject,timer)
     time.sleep(0.2)
+
+  def readTimeout(self,serialObject,timer):
+    out = serialObject.readline().decode()
+    if out == '':
+      if timer.TimerStarted:
+        timer.CheckTimer()
+      else:
+        timer.StartTimer()
+    else:
+      timer.StopTimer()
+    return out
 
   def runUpdate(self, serialObject, conIP, PCIP, kernelPath):
     test = ipaddress.IPv4Address(conIP)
@@ -148,6 +187,7 @@ class UpdateThread(QThread):
       pass
     else:
       raise InvalidDir
+    timer = TimerClass()
     self.loadStatus.emit("Starting TFTP server", 1)
     serverino = ServerClass(newpath)
     tftpProcess = Thread(target=serverino.ServerFunc, args=())
@@ -176,49 +216,48 @@ class UpdateThread(QThread):
     serialObject.reset_input_buffer()
     serialObject.reset_output_buffer()
 
-    self.sendTilde(serialObject)
+    self.sendTilde(serialObject,timer)
 
-    self.writeCommand(serialObject, update1)
-    self.writeCommand(serialObject, update2)
-    self.writeCommand(serialObject, update3)
-    self.writeCommand(serialObject, update4)
+    self.writeCommand(serialObject, update1, timer)
+    self.writeCommand(serialObject, update2, timer)
+    self.writeCommand(serialObject, update3, timer)
+    self.writeCommand(serialObject, update4, timer)
     serialObject.write(update5.encode())
 
     while 1:
-      out = serialObject.readline().decode()
+      out = self.readTimeout(serialObject,timer)
       matchUpdate = re.search('enter "run update"*.', out)
       if matchUpdate:
         serialObject.write(update6.encode())
         break
     self.loadStatus.emit("Downloading over TFTP", 5)
     while 1:
-      out = serialObject.readline().decode()
+      out = self.readTimeout(serialObject,timer)
       matchReset = re.search('resetting*.', out)
       if matchReset:
-        self.sendTilde(serialObject)
+        self.sendTilde(serialObject, timer)
         break
     self.loadStatus.emit("Rebooting", 7)
-    self.writeCommand(serialObject, newline)
-    self.writeCommand(serialObject, newline)
-    self.writeCommand(serialObject, boot)
-
+    self.writeCommand(serialObject, newline, timer)
+    self.writeCommand(serialObject, newline, timer)
+    self.writeCommand(serialObject, boot, timer)
     while 1:
-      out = serialObject.readline().decode()
+      out = self.readTimeout(serialObject,timer)
       matchLogin = re.search('.*iecTeso version.*', out)
       if matchLogin:
         for i in range(10):
-          out = serialObject.readline().decode()
+          out = self.readTimeout(serialObject,timer)
 
         serialObject.write(newline.encode())
         for i in range(10):
-          out = serialObject.readline().decode()
+          out = self.readTimeout(serialObject,timer)
         break
 
     self.loadStatus.emit("Logging in", 8)
-    self.writeCommand(serialObject, 'root\n')
-    self.writeCommand(serialObject, 'Netsilicon\n')
+    self.writeCommand(serialObject, 'root\n', timer)
+    self.writeCommand(serialObject, 'Netsilicon\n', timer)
     configstr = "ifconfig eth0 " + conIP + "\n"
-    self.writeCommand(serialObject, configstr)
+    self.writeCommand(serialObject, configstr, timer)
     self.loadStatus.emit("Finishing up", 9)
     serialObject.close()
     serverino.ServerKill()
