@@ -14,6 +14,9 @@ class Ui_PopUpDialog(object):
     def setupUi(self, PopUpDialog):
         PopUpDialog.setObjectName("PopUpDialog")
         PopUpDialog.resize(395, 263)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/Warning/Warning.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        PopUpDialog.setWindowIcon(icon)
         self.buttonBox = QtWidgets.QDialogButtonBox(PopUpDialog)
         self.buttonBox.setGeometry(QtCore.QRect(160, 230, 81, 21))
         self.buttonBox.setOrientation(QtCore.Qt.Vertical)
@@ -22,7 +25,7 @@ class Ui_PopUpDialog(object):
         self.popupimage = QtWidgets.QLabel(PopUpDialog)
         self.popupimage.setGeometry(QtCore.QRect(130, 10, 131, 121))
         self.popupimage.setText("")
-        self.popupimage.setPixmap(QtGui.QPixmap("warning-icon-11552769738dqsq0g82mv.png"))
+        self.popupimage.setPixmap(QtGui.QPixmap(":/Warning/Warning.png"))
         self.popupimage.setScaledContents(True)
         self.popupimage.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.popupimage.setObjectName("popupimage")
@@ -39,6 +42,7 @@ class Ui_PopUpDialog(object):
         _translate = QtCore.QCoreApplication.translate
         PopUpDialog.setWindowTitle(_translate("PopUpDialog", "Dialog"))
         self.popuptext.setText(_translate("PopUpDialog", "DUMMY TEXT"))
+import ImageSources
 
 
 if __name__ == "__main__":

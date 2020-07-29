@@ -11,41 +11,279 @@
 # python -m PyQt5.uic.pyuic -x [FILENAME].ui -o [FILENAME].py
 
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QFileDialog, QDialog, QApplication
-from PyQt5.QtCore import QObject, pyqtSlot
-from GUI import Ui_Dialog
-from Progress import Ui_Dialog as ProgressDialog
-from PopUp import Ui_PopUpDialog
-from Updater import runUpdate, InvalidDir
-import sys, docx
-import time
 import os
-import serial.tools.list_ports
-import serial
-import paramiko
+import re
+import sys
+import time
 from threading import Thread
+import ipaddress
+
+import paramiko
+import serial
+import serial.tools.list_ports
+import tftpy
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import pyqtSignal, QObject, QThread, Qt
+from PyQt5.QtWidgets import QFileDialog, QDialog
+
+from GUI import Ui_Dialog
+from PopUp import Ui_PopUpDialog
+from Progress import Ui_Form as ProgressDialog
+
 
 class IPException(Exception):
   pass
 class PathException(Exception):
   pass
 
+class TimeoutException(Exception):
+  pass
+
 class PopUpClass (QDialog, Ui_PopUpDialog):
   def __init__(self, parent=None):
     super(PopUpClass, self).__init__(parent)
     super().setupUi(self)
+  def handleError(self,WindowTitle,ErrorMess):
+    self.popuptext.setText(ErrorMess)
+    self.setWindowTitle(WindowTitle)
+  def Opener(self):
+    self.show()
+  def Closer(self):
+    self.hide()
 
 class ProgressClass (QDialog, ProgressDialog):
   def __init__(self, parent=None):
     super(ProgressClass, self).__init__(parent)
     super().setupUi(self)
+    self.setWindowFlags(Qt.CustomizeWindowHint)
 
-class MainWindowUIClass( Ui_Dialog ):
+  def handleChange(self,UpdateText,UpdateNum):
+    self.Status.setText(UpdateText)
+    self.progressBar.setValue(UpdateNum)
+  def Closer(self):
+    self.hide()
+  def Opener(self):
+    self.show()
+
+class TimerClass(object):
+  def __init__(self):
+    self.start = 0
+    self.current = 0
+    self.TimerStarted = False
+
+  def StartTimer(self):
+    self.start = time.time()
+    self.TimerStarted = True
+
+  def StopTimer(self):
+    self.TimerStarted = False
+    self.start = 0
+    self.current = 0
+
+  def CheckTimer(self):
+    self.current = time.time()
+    if (self.current - self.start) > 30:
+      self.TimerStarted = False
+      raise TimeoutException
+
+class UpdateThread(QThread):
+  loadStatus = pyqtSignal(str, int)
+  closeProg = pyqtSignal()
+  errorMessage = pyqtSignal(str,str)
+  loadPopup = pyqtSignal()
+  openProg = pyqtSignal()
+  def __init__(self, COMPort, conIP, PCIP, pathEdit):
+    QThread.__init__(self)
+    self.COMPort = COMPort
+    self.conIP = conIP
+    self.PCIP = PCIP
+    self.pathEdit = pathEdit
+
+
+  def run(self):
+    try:
+      ser = serial.Serial(self.COMPort, 115200, timeout=0.1)
+      ser.close()
+      self.runUpdate(ser,self.conIP,self.PCIP,self.pathEdit)
+      self.errorMessage.emit("Success", "Kernel loaded successfully\nController IP address is: " + self.conIP)
+      self.loadPopup.emit()
+      self.closeProg.emit()
+      self.quit()
+    except PathException:
+      ser.close()
+      self.errorMessage.emit("Error", "Please select a directory")
+      self.loadPopup.emit()
+      self.closeProg.emit()
+    except serial.SerialException:
+      self.errorMessage.emit("Error", "Cannot open serial port\nPlease ensure no other program is using the serial port\nand that it is connected correctly")
+      self.loadPopup.emit()
+      self.closeProg.emit()
+    except paramiko.ssh_exception.SSHException:
+      ser.close()
+      self.errorMessage.emit("Error", "Cannot connect to controller through SSH\nPlease ensure controller is connected correctly")
+      self.loadPopup.emit()
+      self.closeProg.emit()
+    except InvalidDir:
+      ser.close()
+      self.errorMessage.emit("Error", "Directory does not contain Linux Kernel files\nPlease select a new directory")
+      self.loadPopup.emit()
+      self.closeProg.emit()
+    except ipaddress.AddressValueError:
+      ser.close()
+      self.errorMessage.emit("Error", "IP address not valid\nPlease enter a valid IP")
+      self.loadPopup.emit()
+      self.closeProg.emit()
+    except TimeoutException:
+      ser.close()
+      self.errorMessage.emit("Error", "Serial connection lost\nPlease try again")
+      self.loadPopup.emit()
+      self.closeProg.emit()
+
+  def sendTilde(self, serialObject,timer):
+    command = '~\n'
+    query = 'version\n'
+    newline = '\n'
+    while 1:
+      serialObject.write(command.encode())
+      out = self.readTimeout(serialObject,timer)
+      serialObject.write(query.encode())
+      out = self.readTimeout(serialObject,timer)
+      match = re.search('Colibri VFxx*.', out)
+      if match:
+        for i in range(10):
+          out = self.readTimeout(serialObject,timer)
+
+        serialObject.write(newline.encode())
+        for i in range(10):
+          out = self.readTimeout(serialObject,timer)
+        break
+
+  def writeCommand(self, serialObject, string, timer):
+    serialObject.write(string.encode())
+    out = self.readTimeout(serialObject,timer)
+    time.sleep(0.2)
+
+  def readTimeout(self,serialObject,timer):
+    out = serialObject.readline().decode()
+    if out == '':
+      if timer.TimerStarted:
+        timer.CheckTimer()
+      else:
+        timer.StartTimer()
+    else:
+      timer.StopTimer()
+    return out
+
+  def runUpdate(self, serialObject, conIP, PCIP, kernelPath):
+    test = ipaddress.IPv4Address(conIP)
+    test = ipaddress.IPv4Address(PCIP)
+    newpath = kernelPath.replace('/', '\\')
+    if kernelPath == "":
+      raise PathException
+    if os.path.isfile(os.path.join(newpath, 'ubifs.img')) and os.path.isfile(
+        os.path.join(newpath, 'flash_mmc.img')) and os.path.isfile(
+        os.path.join(newpath, 'flash_eth.img')) and os.path.isfile(
+        os.path.join(newpath, 'flash_blk.img')) and os.path.isfile(os.path.join(newpath, 'configblock.bin')):
+      pass
+    else:
+      raise InvalidDir
+    timer = TimerClass()
+    self.loadStatus.emit("Starting TFTP server", 1)
+    serverino = ServerClass(newpath)
+    tftpProcess = Thread(target=serverino.ServerFunc, args=())
+    tftpProcess.start()
+    self.loadStatus.emit("Opening COM Port", 1)
+    serialObject.open()
+    self.loadStatus.emit("Opening SSH connection", 2)
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(conIP, username='root', password='Netsilicon')
+    self.loadStatus.emit("Rebooting", 2)
+    stdin, stdout, stderr = client.exec_command('reboot')
+
+    client.close()
+
+    boot = 'boot\n'
+    update1 = "setenv serverip " + PCIP + "\n"
+    update2 = "setenv ipaddr " + conIP + "\n"
+    update3 = "setenv setupdate 'tftpboot ${loadaddr} ${serverip}:flash_eth.img && source ${loadaddr}'\n"
+    update4 = "saveenv\n"
+    update5 = "run setupdate\n"
+    update6 = "run update\n"
+    newline = '\n'
+    out = ''
+
+    serialObject.reset_input_buffer()
+    serialObject.reset_output_buffer()
+
+    self.sendTilde(serialObject,timer)
+
+    self.writeCommand(serialObject, update1, timer)
+    self.writeCommand(serialObject, update2, timer)
+    self.writeCommand(serialObject, update3, timer)
+    self.writeCommand(serialObject, update4, timer)
+    serialObject.write(update5.encode())
+
+    while 1:
+      out = self.readTimeout(serialObject,timer)
+      matchUpdate = re.search('enter "run update"*.', out)
+      if matchUpdate:
+        serialObject.write(update6.encode())
+        break
+    self.loadStatus.emit("Downloading over TFTP", 5)
+    while 1:
+      out = self.readTimeout(serialObject,timer)
+      matchReset = re.search('resetting*.', out)
+      if matchReset:
+        self.sendTilde(serialObject, timer)
+        break
+    self.loadStatus.emit("Rebooting", 7)
+    self.writeCommand(serialObject, newline, timer)
+    self.writeCommand(serialObject, newline, timer)
+    self.writeCommand(serialObject, boot, timer)
+    while 1:
+      out = self.readTimeout(serialObject,timer)
+      matchLogin = re.search('.*iecTeso version.*', out)
+      if matchLogin:
+        for i in range(10):
+          out = self.readTimeout(serialObject,timer)
+
+        serialObject.write(newline.encode())
+        for i in range(10):
+          out = self.readTimeout(serialObject,timer)
+        break
+
+    self.loadStatus.emit("Logging in", 8)
+    self.writeCommand(serialObject, 'root\n', timer)
+    self.writeCommand(serialObject, 'Netsilicon\n', timer)
+    configstr = "ifconfig eth0 " + conIP + "\n"
+    self.writeCommand(serialObject, configstr, timer)
+    self.loadStatus.emit("Finishing up", 9)
+    serialObject.close()
+    serverino.ServerKill()
+    self.closeProg.emit()
+    return True
+
+class InvalidDir(Exception):
+  pass
+
+class ServerClass(object):
+  def __init__(self, ServerPath):
+    self.ServerPath = ServerPath
+    self.server = tftpy.TftpServer(self.ServerPath)
+  def ServerFunc(self):
+    self.server.listen()
+  def ServerKill(self):
+    self.server.stop()
+
+class MainWindowUIClass( Ui_Dialog, QObject ):
+
   def __init__( self ):
     '''Initialize the super class
     '''
     super().__init__()
+    self.progress = ProgressClass()
+    self.popup = PopUpClass()
 
   def setupUi( self, MW ):
     ''' Setup the UI of the super class, and add here code
@@ -54,7 +292,7 @@ class MainWindowUIClass( Ui_Dialog ):
     super().setupUi( MW )
     self.fileSelect.clicked.connect(self.fileOpen)
     # self.goButton.clicked.connect(self.generate)
-    self.goButton.clicked.connect(self.threadGo)
+    self.goButton.clicked.connect(self.generate)
     self.COMPort.view().pressed.connect(self.populateComPort)
     self.populateComPort()
 
@@ -71,45 +309,17 @@ class MainWindowUIClass( Ui_Dialog ):
     self.pathEdit.setText(filePath)
 
   def generate(self):
-    print('load process started')
-    self.goButton.setEnabled(False)
-    try:
-      if self.conIP.text() == "" or self.PCIP.text() == "":
-        raise IPException
-      if self.pathEdit.text() == "":
-        raise PathException
-      if runUpdate(self.COMPort.currentText(),self.conIP.text(),self.PCIP.text(), self.pathEdit.text()):
-        cheese = QApplication.topLevelWidgets()
-        print(cheese)
-        self.popup("Kernel loaded successfully", "Success")
-    except IPException:
-      self.popup("IP address missing\nPlease try again","Error")
-    except PathException:
-      self.popup("Kernel path missing\nPlease try again","Error")
-    except serial.SerialException:
-      self.popup("Serial port in use\nClose the port and try again","Error")
-    except paramiko.ssh_exception.SSHException:
-      self.popup("Could not connect through SSH\nEnsure the IP address of the controller is correct\nand that is is connected correctly", "Error")
-    except InvalidDir:
-      self.popup("Directory does not contain Linux Kernel files", "Error")
 
-    self.goButton.setEnabled(True)
-
-  def threadGo(self):
-    self.progProc = Thread(target=self.progressInd,args=())
-    self.genProc = Thread(target=self.generate,args=())
-    self.progProc.start()
-    self.genProc.start()
-
-  def popup(self, errorMessage,windowTitle):
-    widget = PopUpClass()
-    widget.popuptext.setText(errorMessage)
-    widget.setWindowTitle(windowTitle)
-    widget.exec_()
-
-  def progressInd(self):
-    widget = ProgressClass()
-    widget.exec_()
+    updaterThread = UpdateThread(self.COMPort.currentText(),self.conIP.text(),self.PCIP.text(), self.pathEdit.text())
+    updaterThread.loadStatus.connect(self.progress.handleChange)
+    updaterThread.openProg.connect(self.progress.Opener)
+    updaterThread.closeProg.connect(self.progress.Closer)
+    updaterThread.errorMessage.connect(self.popup.handleError)
+    updaterThread.loadPopup.connect(self.popup.Opener)
+    updaterThread.start()
+    self.progress.exec_()
+    self.popup.exec_()
+    self.popup.hide()
 
 if __name__ == '__main__':
 

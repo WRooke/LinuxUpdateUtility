@@ -20,8 +20,8 @@
    <string>Linux Kernel Update Utility</string>
   </property>
   <property name="windowIcon">
-   <iconset>
-    <normaloff>2000px-Tux-simple.svg.png</normaloff>2000px-Tux-simple.svg.png</iconset>
+   <iconset resource="ImageSources.qrc">
+    <normaloff>:/Tux/Tux.png</normaloff>:/Tux/Tux.png</iconset>
   </property>
   <widget class="QWidget" name="formLayoutWidget_2">
    <property name="geometry">
@@ -187,6 +187,8 @@
   <tabstop>PCIP</tabstop>
   <tabstop>goButton</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="ImageSources.qrc"/>
+ </resources>
  <connections/>
 </ui>

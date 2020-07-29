@@ -9,6 +9,8 @@ from os import path
 class InvalidDir(Exception):
   pass
 
+
+
 def ServerFunc(ServerPath):
   server = tftpy.TftpServer(ServerPath)
   # server = tftpy.TftpServer(tftproot=r'C:\Users\williamr\OneDrive - OEM TECHNOLOGY SOLUTIONS PTY LTD\PC3\070-0767\-5\3-0899V2')
@@ -73,7 +75,7 @@ def runUpdate(comPort, conIP, PCIP, kernelPath):
 
   sendTilde(ser)
 
-  writeCommand(ser, update1)
+  self.writeCommand(ser, update1)
   writeCommand(ser, update2)
   writeCommand(ser, update3)
   writeCommand(ser, update4)
