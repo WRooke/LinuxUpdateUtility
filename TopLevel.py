@@ -114,30 +114,36 @@ class UpdateThread(QThread):
       self.errorMessage.emit("Error", "Please select a directory")
       self.loadPopup.emit()
       self.closeProg.emit()
+      self.quit()
     except serial.SerialException:
       self.errorMessage.emit("Error", "Cannot open serial port\nPlease ensure no other program is using the serial port\nand that it is connected correctly")
       self.loadPopup.emit()
       self.closeProg.emit()
+      self.quit()
     except paramiko.ssh_exception.SSHException:
       ser.close()
       self.errorMessage.emit("Error", "Cannot connect to controller through SSH\nPlease ensure controller is connected correctly")
       self.loadPopup.emit()
       self.closeProg.emit()
+      self.quit()
     except InvalidDir:
       ser.close()
       self.errorMessage.emit("Error", "Directory does not contain Linux Kernel files\nPlease select a new directory")
       self.loadPopup.emit()
       self.closeProg.emit()
+      self.quit()
     except ipaddress.AddressValueError:
       ser.close()
       self.errorMessage.emit("Error", "IP address not valid\nPlease enter a valid IP")
       self.loadPopup.emit()
       self.closeProg.emit()
+      self.quit()
     except TimeoutException:
       ser.close()
       self.errorMessage.emit("Error", "Serial connection lost\nPlease try again")
       self.loadPopup.emit()
       self.closeProg.emit()
+      self.quit()
 
   def sendTilde(self, serialObject,timer):
     command = '~\n'
@@ -174,6 +180,22 @@ class UpdateThread(QThread):
       timer.StopTimer()
     return out
 
+  def loginCheck(self,serialObject,timer):
+    newline = '\n'
+    while 1:
+      out = self.readTimeout(serialObject,timer)
+      matchLogin = re.search('.*iecTeso version.*', out)
+      if matchLogin:
+        for i in range(10):
+          out = self.readTimeout(serialObject,timer)
+
+        self.writeCommand(serialObject,newline,timer)
+        for i in range(10):
+          out = self.readTimeout(serialObject,timer)
+        break
+    self.writeCommand(serialObject, 'root\n', timer)
+    self.writeCommand(serialObject, 'Netsilicon\n', timer)
+
   def runUpdate(self, serialObject, conIP, PCIP, kernelPath):
     test = ipaddress.IPv4Address(conIP)
     test = ipaddress.IPv4Address(PCIP)
@@ -198,7 +220,9 @@ class UpdateThread(QThread):
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.connect(conIP, username='root', password='Netsilicon')
-    self.loadStatus.emit("Rebooting", 2)
+    sftp = client.open_sftp()
+    sftp.get('/etc/network/interfaces', os.path.join(os.getcwd(),'interfaces'))
+    self.loadStatus.emit("Rebooting", 3)
     stdin, stdout, stderr = client.exec_command('reboot')
 
     client.close()
@@ -230,34 +254,35 @@ class UpdateThread(QThread):
       if matchUpdate:
         serialObject.write(update6.encode())
         break
-    self.loadStatus.emit("Downloading over TFTP", 5)
+    self.loadStatus.emit("Downloading over TFTP", 4)
     while 1:
       out = self.readTimeout(serialObject,timer)
       matchReset = re.search('resetting*.', out)
       if matchReset:
         self.sendTilde(serialObject, timer)
         break
-    self.loadStatus.emit("Rebooting", 7)
+    self.loadStatus.emit("Rebooting", 5)
     self.writeCommand(serialObject, newline, timer)
     self.writeCommand(serialObject, newline, timer)
     self.writeCommand(serialObject, boot, timer)
-    while 1:
-      out = self.readTimeout(serialObject,timer)
-      matchLogin = re.search('.*iecTeso version.*', out)
-      if matchLogin:
-        for i in range(10):
-          out = self.readTimeout(serialObject,timer)
 
-        serialObject.write(newline.encode())
-        for i in range(10):
-          out = self.readTimeout(serialObject,timer)
-        break
+    self.loginCheck(serialObject,timer)
 
-    self.loadStatus.emit("Logging in", 8)
-    self.writeCommand(serialObject, 'root\n', timer)
-    self.writeCommand(serialObject, 'Netsilicon\n', timer)
+    self.loadStatus.emit("Logging in", 6)
+
     configstr = "ifconfig eth0 " + conIP + "\n"
     self.writeCommand(serialObject, configstr, timer)
+    client2 = paramiko.SSHClient()
+    client2.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client2.connect(conIP, username='root', password='Netsilicon')
+    sftp = client2.open_sftp()
+    sftp.put(os.path.join(os.getcwd(), 'interfaces'), '/etc/network/interfaces')
+    client2.close()
+    self.loadStatus.emit("Applying network settings", 8)
+    self.writeCommand(serialObject,'reboot\n',timer)
+    self.sendTilde(serialObject, timer)
+    self.writeCommand(serialObject, boot, timer)
+    self.loginCheck(serialObject, timer)
     self.loadStatus.emit("Finishing up", 9)
     serialObject.close()
     serverino.ServerKill()
