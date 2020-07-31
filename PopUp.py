@@ -13,24 +13,24 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_PopUpDialog(object):
     def setupUi(self, PopUpDialog):
         PopUpDialog.setObjectName("PopUpDialog")
-        PopUpDialog.resize(395, 263)
+        PopUpDialog.resize(400, 260)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/Warning/Warning.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         PopUpDialog.setWindowIcon(icon)
         self.buttonBox = QtWidgets.QDialogButtonBox(PopUpDialog)
-        self.buttonBox.setGeometry(QtCore.QRect(160, 230, 81, 21))
+        self.buttonBox.setGeometry(QtCore.QRect(160, 225, 80, 21))
         self.buttonBox.setOrientation(QtCore.Qt.Vertical)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.popupimage = QtWidgets.QLabel(PopUpDialog)
-        self.popupimage.setGeometry(QtCore.QRect(130, 10, 131, 121))
+        self.popupimage.setGeometry(QtCore.QRect(130, 10, 140, 140))
         self.popupimage.setText("")
         self.popupimage.setPixmap(QtGui.QPixmap(":/Warning/Warning.png"))
         self.popupimage.setScaledContents(True)
         self.popupimage.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.popupimage.setObjectName("popupimage")
         self.popuptext = QtWidgets.QLabel(PopUpDialog)
-        self.popuptext.setGeometry(QtCore.QRect(0, 160, 391, 41))
+        self.popuptext.setGeometry(QtCore.QRect(0, 160, 400, 41))
         self.popuptext.setAlignment(QtCore.Qt.AlignCenter)
         self.popuptext.setObjectName("popuptext")
 
@@ -40,7 +40,7 @@ class Ui_PopUpDialog(object):
 
     def retranslateUi(self, PopUpDialog):
         _translate = QtCore.QCoreApplication.translate
-        PopUpDialog.setWindowTitle(_translate("PopUpDialog", "Dialog"))
+        PopUpDialog.setWindowTitle(_translate("PopUpDialog", "Error"))
         self.popuptext.setText(_translate("PopUpDialog", "DUMMY TEXT"))
 import ImageSources
 

@@ -9,6 +9,9 @@
 #
 # UI -> PY CONSOLE COMMAND
 # python -m PyQt5.uic.pyuic -x [FILENAME].ui -o [FILENAME].py
+#
+# Image source resource file compile command
+# pyrcc5 -o ImageSources.py ImageSources.qrc
 
 
 import os
@@ -22,13 +25,14 @@ import paramiko
 import serial
 import serial.tools.list_ports
 import tftpy
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import pyqtSignal, QObject, QThread, Qt
 from PyQt5.QtWidgets import QFileDialog, QDialog
 
 from GUI import Ui_Dialog
 from PopUp import Ui_PopUpDialog
 from Progress import Ui_Form as ProgressDialog
+from About import Ui_Form as AboutDialog
 
 
 class IPException(Exception):
@@ -43,9 +47,13 @@ class PopUpClass (QDialog, Ui_PopUpDialog):
   def __init__(self, parent=None):
     super(PopUpClass, self).__init__(parent)
     super().setupUi(self)
-  def handleError(self,WindowTitle,ErrorMess):
+  def handleError(self,WindowTitle,ErrorMess,success):
     self.popuptext.setText(ErrorMess)
     self.setWindowTitle(WindowTitle)
+    if success:
+      self.popupimage.setPixmap(QtGui.QPixmap(":/Success/Success.png"))
+    else:
+      self.popupimage.setPixmap(QtGui.QPixmap(":/Warning/Warning.png"))
   def Opener(self):
     self.show()
   def Closer(self):
@@ -57,9 +65,22 @@ class ProgressClass (QDialog, ProgressDialog):
     super().setupUi(self)
     self.setWindowFlags(Qt.CustomizeWindowHint)
 
+  def Opener(self):
+    self.show()
+
+  def Closer(self):
+    self.hide()
+
   def handleChange(self,UpdateText,UpdateNum):
     self.Status.setText(UpdateText)
     self.progressBar.setValue(UpdateNum)
+
+
+class AboutClass (QDialog, AboutDialog):
+  def __init__(self, parent = None):
+    super(AboutClass, self).__init__(parent)
+    super().setupUi(self)
+
   def Closer(self):
     self.hide()
   def Opener(self):
@@ -89,7 +110,7 @@ class TimerClass(object):
 class UpdateThread(QThread):
   loadStatus = pyqtSignal(str, int)
   closeProg = pyqtSignal()
-  errorMessage = pyqtSignal(str,str)
+  errorMessage = pyqtSignal(str,str,bool)
   loadPopup = pyqtSignal()
   openProg = pyqtSignal()
   def __init__(self, COMPort, conIP, PCIP, pathEdit):
@@ -105,42 +126,42 @@ class UpdateThread(QThread):
       ser = serial.Serial(self.COMPort, 115200, timeout=0.1)
       ser.close()
       self.runUpdate(ser,self.conIP,self.PCIP,self.pathEdit)
-      self.errorMessage.emit("Success", "Kernel loaded successfully\nController IP address is: " + self.conIP)
+      self.errorMessage.emit("Success", "Kernel loaded successfully\nController IP address is: " + self.conIP, True)
       self.loadPopup.emit()
       self.closeProg.emit()
       self.quit()
     except PathException:
       ser.close()
-      self.errorMessage.emit("Error", "Please select a directory")
+      self.errorMessage.emit("Error", "Please select a directory", False)
       self.loadPopup.emit()
       self.closeProg.emit()
       self.quit()
     except serial.SerialException:
-      self.errorMessage.emit("Error", "Cannot open serial port\nPlease ensure no other program is using the serial port\nand that it is connected correctly")
+      self.errorMessage.emit("Error", "Cannot open serial port\nPlease ensure no other program is using the serial port\nand that it is connected correctly", False)
       self.loadPopup.emit()
       self.closeProg.emit()
       self.quit()
     except paramiko.ssh_exception.SSHException:
       ser.close()
-      self.errorMessage.emit("Error", "Cannot connect to controller through SSH\nPlease ensure controller is connected correctly")
+      self.errorMessage.emit("Error", "Cannot connect to controller through SSH\nPlease ensure controller is connected correctly", False)
       self.loadPopup.emit()
       self.closeProg.emit()
       self.quit()
     except InvalidDir:
       ser.close()
-      self.errorMessage.emit("Error", "Directory does not contain Linux Kernel files\nPlease select a new directory")
+      self.errorMessage.emit("Error", "Directory does not contain Linux Kernel files\nPlease select a new directory", False)
       self.loadPopup.emit()
       self.closeProg.emit()
       self.quit()
     except ipaddress.AddressValueError:
       ser.close()
-      self.errorMessage.emit("Error", "IP address not valid\nPlease enter a valid IP")
+      self.errorMessage.emit("Error", "IP address not valid\nPlease enter a valid IP", False)
       self.loadPopup.emit()
       self.closeProg.emit()
       self.quit()
     except TimeoutException:
       ser.close()
-      self.errorMessage.emit("Error", "Serial connection lost\nPlease try again")
+      self.errorMessage.emit("Error", "Serial connection lost\nPlease try again", False)
       self.loadPopup.emit()
       self.closeProg.emit()
       self.quit()
@@ -309,6 +330,7 @@ class MainWindowUIClass( Ui_Dialog, QObject ):
     super().__init__()
     self.progress = ProgressClass()
     self.popup = PopUpClass()
+    self.aboutwindow = AboutClass()
 
   def setupUi( self, MW ):
     ''' Setup the UI of the super class, and add here code
@@ -318,6 +340,7 @@ class MainWindowUIClass( Ui_Dialog, QObject ):
     self.fileSelect.clicked.connect(self.fileOpen)
     # self.goButton.clicked.connect(self.generate)
     self.goButton.clicked.connect(self.generate)
+    self.about.clicked.connect(self.aboutwindow.Opener)
     self.COMPort.view().pressed.connect(self.populateComPort)
     self.populateComPort()
 
@@ -332,6 +355,9 @@ class MainWindowUIClass( Ui_Dialog, QObject ):
     qfd = QFileDialog()
     filePath = QFileDialog.getExistingDirectory(qfd, str("Open Linux kernel location"), os.getcwd())
     self.pathEdit.setText(filePath)
+
+  # def openAbout(self):
+  #   self.aboutwindow.Opener()
 
   def generate(self):
 

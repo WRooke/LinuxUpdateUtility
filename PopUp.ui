@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>395</width>
-    <height>263</height>
+    <width>400</width>
+    <height>260</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Error</string>
   </property>
   <property name="windowIcon">
    <iconset resource="ImageSources.qrc">
@@ -21,8 +21,8 @@
    <property name="geometry">
     <rect>
      <x>160</x>
-     <y>230</y>
-     <width>81</width>
+     <y>225</y>
+     <width>80</width>
      <height>21</height>
     </rect>
    </property>
@@ -38,8 +38,8 @@
     <rect>
      <x>130</x>
      <y>10</y>
-     <width>131</width>
-     <height>121</height>
+     <width>140</width>
+     <height>140</height>
     </rect>
    </property>
    <property name="text">
@@ -60,7 +60,7 @@
     <rect>
      <x>0</x>
      <y>160</y>
-     <width>391</width>
+     <width>400</width>
      <height>41</height>
     </rect>
    </property>
