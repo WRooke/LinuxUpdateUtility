@@ -401,10 +401,34 @@ class UpdateThread(QThread):
 
         # Ensure path actually contains all necessary kernel files
         # NOTE: DOES NOT CHECK CONTENTS, ONLY CHECKS IF THEY EXIST
-        if os.path.isfile(os.path.join(newpath, 'ubifs.img')) and os.path.isfile(
-              os.path.join(newpath, 'flash_mmc.img')) and os.path.isfile(
-            os.path.join(newpath, 'flash_eth.img')) and os.path.isfile(
-            os.path.join(newpath, 'flash_blk.img')) and os.path.isfile(os.path.join(newpath, 'configblock.bin')):
+
+        PM3004Files = (os.path.isfile(os.path.join(newpath, 'ubifs.img')) and
+                       os.path.isfile(os.path.join(newpath, 'flash_mmc.img')) and
+                       os.path.isfile(os.path.join(newpath, 'flash_eth.img')) and
+                       os.path.isfile(os.path.join(newpath, 'flash_blk.img')) and
+                       os.path.isfile(os.path.join(newpath, 'u-boot-nand.imx')) and
+                       os.path.isfile(os.path.join(newpath, 'configblock.bin')))
+
+        PM3003Files = (os.path.isfile(os.path.join(newpath, 'boot.vfat')) and
+                       os.path.isfile(os.path.join(newpath, 'flash_mmc.img')) and
+                       os.path.isfile(os.path.join(newpath, 'flash_eth.img')) and
+                       os.path.isfile(os.path.join(newpath, 'flash_blk.img')) and
+                       os.path.isfile(os.path.join(newpath, 'mbr.bin')) and
+                       os.path.isfile(os.path.join(newpath, 'imx6dl-colibri-eval-v3.dtb')) and
+                       os.path.isfile(os.path.join(newpath, 'root.ext3')) and
+                       os.path.isfile(os.path.join(newpath, 'root.ext3-0')) and
+                       os.path.isfile(os.path.join(newpath, 'root.ext3-1')) and
+                       os.path.isfile(os.path.join(newpath, 'u-boot.imx')) and
+                       os.path.isfile(os.path.join(newpath, 'uImage')))
+
+        PM3005Files = (os.path.isfile(os.path.join(newpath, 'ubifs.img')) and
+                       os.path.isfile(os.path.join(newpath, 'flash_eth.img')) and
+                       os.path.isfile(os.path.join(newpath, 'flash_blk.img')) and
+                       os.path.isfile(os.path.join(newpath, 'imx6ull-colibri-wifi-eval-v3.dtb')) and
+                       os.path.isfile(os.path.join(newpath, 'u-boot-nand.imx')) and
+                       os.path.isfile(os.path.join(newpath, 'zImage')))
+
+        if PM3003Files or PM3004Files or PM3005Files:
             pass
         else:
             raise InvalidDir
