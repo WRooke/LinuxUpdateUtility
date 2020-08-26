@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="aee31934-fc29-46a2-9ec8-65c1d03fa524" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="1eQVHHrHuErZl018LliRcamcaie" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="Python" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="preferences.sourceCode.Python" />
+  </component>
+  <component name="PyDebuggerOptionsProvider">
+    <option name="myPyQtBackend" value="PyQt5" />
+  </component>
+  <component name="RunManager" selected="Python.OEMLinuxUpdateUtility">
+    <configuration name="OEMLinuxUpdateUtility" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="LinuxUpdateUtility" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="C:\Program Files (x86)\Python38-32\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="C:\Users\williamr\OneDrive - OEM TECHNOLOGY SOLUTIONS PTY LTD\Systems\LinuxUpdateUtility\OEMLinuxUpdateUtility.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="scratch_1" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Linux Update Utility" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$APPLICATION_CONFIG_DIR$/scratches" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$APPLICATION_CONFIG_DIR$/scratches/scratch_1.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.scratch_1" />
+      <item itemvalue="Python.OEMLinuxUpdateUtility" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.OEMLinuxUpdateUtility" />
+        <item itemvalue="Python.scratch_1" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="aee31934-fc29-46a2-9ec8-65c1d03fa524" name="Default Changelist" comment="" />
+      <created>1594253713284</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1594253713284</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="392" y="88" width="816" height="729" key="#Intentions" timestamp="1596755896338">
+      <screen x="0" y="0" width="1600" height="860" />
+    </state>
+    <state x="392" y="88" width="816" height="729" key="#Intentions/0.0.1600.860/-1920.-504.1920.1080@0.0.1600.860" timestamp="1596755896338" />
+    <state x="685" y="293" width="477" height="274" key="#Notifications" timestamp="1595548859580">
+      <screen x="0" y="0" width="1600" height="860" />
+    </state>
+    <state x="685" y="293" width="477" height="274" key="#Notifications/0.0.1600.860/-1920.-504.1920.1080@0.0.1600.860" timestamp="1595548859580" />
+    <state x="509" y="25" key="#TopLevel" timestamp="1596665840118">
+      <screen x="0" y="0" width="1600" height="860" />
+    </state>
+    <state x="509" y="25" key="#TopLevel/0.0.1600.860/-1920.-504.1920.1080@0.0.1600.860" timestamp="1596665840118" />
+    <state x="254" y="85" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1596082954652">
+      <screen x="0" y="0" width="1600" height="860" />
+    </state>
+    <state x="254" y="85" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1600.860/-1920.-504.1920.1080@0.0.1600.860" timestamp="1596082954652" />
+    <state x="591" y="337" key="#com.jetbrains.python.refactoring.move.PyMakeFunctionTopLevelDialog" timestamp="1595548539432">
+      <screen x="0" y="0" width="1600" height="860" />
+    </state>
+    <state x="591" y="337" key="#com.jetbrains.python.refactoring.move.PyMakeFunctionTopLevelDialog/0.0.1600.860/-1920.-504.1920.1080@0.0.1600.860" timestamp="1595548539432" />
+    <state x="643" y="320" key="#com.jetbrains.python.refactoring.move.PyMoveModuleMembersDialog" timestamp="1595548728879">
+      <screen x="0" y="0" width="1600" height="860" />
+    </state>
+    <state x="643" y="320" key="#com.jetbrains.python.refactoring.move.PyMoveModuleMembersDialog/0.0.1600.860/-1920.-504.1920.1080@0.0.1600.860" timestamp="1595548728879" />
+    <state x="580" y="185" key="FileChooserDialogImpl" timestamp="1594257448176">
+      <screen x="0" y="0" width="1600" height="860" />
+    </state>
+    <state x="580" y="185" key="FileChooserDialogImpl/0.0.1600.860/-1920.-504.1920.1080@0.0.1600.860" timestamp="1594257448176" />
+    <state width="1579" height="95" key="GridCell.Tab.0.bottom" timestamp="1596781238478">
+      <screen x="0" y="0" width="1600" height="860" />
+    </state>
+    <state width="1899" height="131" key="GridCell.Tab.0.bottom/0.0.1600.860/-1920.-504.1920.1080@-1920.-504.1920.1080" timestamp="1596776295576" />
+    <state width="1579" height="95" key="GridCell.Tab.0.bottom/0.0.1600.860/-1920.-504.1920.1080@0.0.1600.860" timestamp="1596781238478" />
+    <state width="1579" height="95" key="GridCell.Tab.0.center" timestamp="1596781238477">
+      <screen x="0" y="0" width="1600" height="860" />
+    </state>
+    <state width="1899" height="131" key="GridCell.Tab.0.center/0.0.1600.860/-1920.-504.1920.1080@-1920.-504.1920.1080" timestamp="1596776295576" />
+    <state width="1579" height="95" key="GridCell.Tab.0.center/0.0.1600.860/-1920.-504.1920.1080@0.0.1600.860" timestamp="1596781238477" />
+    <state width="1579" height="95" key="GridCell.Tab.0.left" timestamp="1596781238477">
+      <screen x="0" y="0" width="1600" height="860" />
+    </state>
+    <state width="1899" height="131" key="GridCell.Tab.0.left/0.0.1600.860/-1920.-504.1920.1080@-1920.-504.1920.1080" timestamp="1596776295575" />
+    <state width="1579" height="95" key="GridCell.Tab.0.left/0.0.1600.860/-1920.-504.1920.1080@0.0.1600.860" timestamp="1596781238477" />
+    <state width="1579" height="95" key="GridCell.Tab.0.right" timestamp="1596781238477">
+      <screen x="0" y="0" width="1600" height="860" />
+    </state>
+    <state width="1899" height="131" key="GridCell.Tab.0.right/0.0.1600.860/-1920.-504.1920.1080@-1920.-504.1920.1080" timestamp="1596776295576" />
+    <state width="1579" height="95" key="GridCell.Tab.0.right/0.0.1600.860/-1920.-504.1920.1080@0.0.1600.860" timestamp="1596781238477" />
+    <state width="1579" height="95" key="GridCell.Tab.1.bottom" timestamp="1596173046203">
+      <screen x="0" y="0" width="1600" height="860" />
+    </state>
+    <state width="1579" height="95" key="GridCell.Tab.1.bottom/0.0.1600.860/-1920.-504.1920.1080@0.0.1600.860" timestamp="1596173046203" />
+    <state width="1579" height="95" key="GridCell.Tab.1.center" timestamp="1596173046202">
+      <screen x="0" y="0" width="1600" height="860" />
+    </state>
+    <state width="1579" height="95" key="GridCell.Tab.1.center/0.0.1600.860/-1920.-504.1920.1080@0.0.1600.860" timestamp="1596173046202" />
+    <state width="1579" height="95" key="GridCell.Tab.1.left" timestamp="1596173046202">
+      <screen x="0" y="0" width="1600" height="860" />
+    </state>
+    <state width="1579" height="95" key="GridCell.Tab.1.left/0.0.1600.860/-1920.-504.1920.1080@0.0.1600.860" timestamp="1596173046202" />
+    <state width="1579" height="95" key="GridCell.Tab.1.right" timestamp="1596173046202">
+      <screen x="0" y="0" width="1600" height="860" />
+    </state>
+    <state width="1579" height="95" key="GridCell.Tab.1.right/0.0.1600.860/-1920.-504.1920.1080@0.0.1600.860" timestamp="1596173046202" />
+    <state x="301" y="75" key="SettingsEditor" timestamp="1596172168349">
+      <screen x="0" y="0" width="1600" height="860" />
+    </state>
+    <state x="301" y="75" key="SettingsEditor/0.0.1600.860/-1920.-504.1920.1080@0.0.1600.860" timestamp="1596172168349" />
+    <state width="808" height="438" key="XDebugger.FullValuePopup" timestamp="1596086489478">
+      <screen x="0" y="0" width="1600" height="860" />
+    </state>
+    <state width="808" height="438" key="XDebugger.FullValuePopup/0.0.1600.860/-1920.-504.1920.1080@0.0.1600.860" timestamp="1596086489478" />
+    <state x="364" y="159" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1595981755539">
+      <screen x="0" y="0" width="1600" height="860" />
+    </state>
+    <state x="364" y="159" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2/0.0.1600.860/-1920.-504.1920.1080@0.0.1600.860" timestamp="1595981755539" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$APPLICATION_CONFIG_DIR$/scratches/scratch_1.py</url>
+          <line>4</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>

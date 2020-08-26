@@ -1,17 +1,8 @@
 <RCC>
-  <qresource prefix="Tux">
-    <file>Tux.png</file>
-  </qresource>
-  <qresource prefix="Success">
-    <file>Success.png</file>
-  </qresource>
-  <qresource prefix="DuagonD">
-    <file>d-element-blue.png</file>
-  </qresource>
-  <qresource prefix="DuagonLogo">
-    <file>duagon-logo-seethru.png</file>
-  </qresource>
-  <qresource prefix="Warning">
-    <file>Warning.png</file>
+  <qresource prefix="Images">
+    <file>Images/d-element-blue.png</file>
+    <file>Images/duagon-logo-seethru.png</file>
+    <file>Images/Success.png</file>
+    <file>Images/Warning.png</file>
   </qresource>
 </RCC>

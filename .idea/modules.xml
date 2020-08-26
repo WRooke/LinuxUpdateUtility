@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Linux Update Utility.iml" filepath="$PROJECT_DIR$/.idea/Linux Update Utility.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/LinuxUpdateUtility.iml" filepath="$PROJECT_DIR$/.idea/LinuxUpdateUtility.iml" />
     </modules>
   </component>
 </project>

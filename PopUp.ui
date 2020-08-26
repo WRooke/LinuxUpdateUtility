@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>PopUpDialog</class>
  <widget class="QDialog" name="PopUpDialog">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -15,7 +18,10 @@
   </property>
   <property name="windowIcon">
    <iconset resource="ImageSources.qrc">
-    <normaloff>:/Warning/Warning.png</normaloff>:/Warning/Warning.png</iconset>
+    <normaloff>:/Images/Images/Warning.png</normaloff>:/Images/Images/Warning.png</iconset>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
@@ -46,7 +52,7 @@
     <string/>
    </property>
    <property name="pixmap">
-    <pixmap resource="ImageSources.qrc">:/Warning/Warning.png</pixmap>
+    <pixmap resource="ImageSources.qrc">:/Images/Images/Warning.png</pixmap>
    </property>
    <property name="scaledContents">
     <bool>true</bool>

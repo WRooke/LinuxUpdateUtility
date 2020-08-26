@@ -24,7 +24,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="ImageSources.qrc">
-    <normaloff>:/DuagonD/d-element-blue.png</normaloff>:/DuagonD/d-element-blue.png</iconset>
+    <normaloff>:/Images/Images/d-element-blue.png</normaloff>:/Images/Images/d-element-blue.png</iconset>
   </property>
   <widget class="QWidget" name="gridLayoutWidget_2">
    <property name="geometry">
@@ -193,7 +193,7 @@
     <string/>
    </property>
    <property name="pixmap">
-    <pixmap resource="ImageSources.qrc">:/DuagonLogo/duagon-logo-seethru.png</pixmap>
+    <pixmap resource="ImageSources.qrc">:/Images/Images/duagon-logo-seethru.png</pixmap>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>

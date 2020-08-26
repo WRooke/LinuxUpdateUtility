@@ -18,7 +18,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="ImageSources.qrc">
-    <normaloff>:/Tux/Tux.png</normaloff>:/Tux/Tux.png</iconset>
+    <normaloff>:/Images/Images/d-element-blue.png</normaloff>:/Images/Images/d-element-blue.png</iconset>
   </property>
   <property name="modal">
    <bool>true</bool>

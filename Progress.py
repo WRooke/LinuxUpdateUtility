@@ -14,9 +14,9 @@ class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
         Form.setWindowModality(QtCore.Qt.ApplicationModal)
-        Form.resize(393, 125)
+        Form.resize(391, 125)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/Tux/Tux.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/Images/Images/d-element-blue.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         Form.setWindowIcon(icon)
         Form.setModal(True)
         self.verticalLayoutWidget = QtWidgets.QWidget(Form)
@@ -60,7 +60,7 @@ class Ui_Form(object):
         Form.setWindowTitle(_translate("Form", "Loading..."))
         self.label.setText(_translate("Form", "Loading Kernel, please wait..."))
         self.Status.setText(_translate("Form", "Starting..."))
-import ImageSources
+import ImageSources_rc
 
 
 if __name__ == "__main__":

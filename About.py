@@ -13,9 +13,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
+        Form.setWindowModality(QtCore.Qt.ApplicationModal)
         Form.resize(420, 154)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/DuagonD/d-element-blue.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/Images/Images/d-element-blue.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         Form.setWindowIcon(icon)
         self.verticalLayoutWidget = QtWidgets.QWidget(Form)
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(0, 0, 421, 151))
@@ -87,7 +88,7 @@ class Ui_Form(object):
         self.label_4.setText(_translate("Form", "OEM Technology Solutions Pty Ltd"))
         self.label_5.setText(_translate("Form", "duagon.com"))
         self.label_6.setText(_translate("Form", "All rights reserved"))
-import ImageSources
+import ImageSources_rc
 
 
 if __name__ == "__main__":

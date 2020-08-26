@@ -13,6 +13,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
+        Dialog.setWindowModality(QtCore.Qt.ApplicationModal)
         Dialog.resize(640, 240)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -20,7 +21,7 @@ class Ui_Dialog(object):
         sizePolicy.setHeightForWidth(Dialog.sizePolicy().hasHeightForWidth())
         Dialog.setSizePolicy(sizePolicy)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/DuagonD/d-element-blue.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/Images/Images/d-element-blue.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         Dialog.setWindowIcon(icon)
         self.gridLayoutWidget_2 = QtWidgets.QWidget(Dialog)
         self.gridLayoutWidget_2.setGeometry(QtCore.QRect(18, 120, 601, 109))
@@ -97,7 +98,7 @@ class Ui_Dialog(object):
         self.label = QtWidgets.QLabel(Dialog)
         self.label.setGeometry(QtCore.QRect(210, 15, 220, 90))
         self.label.setText("")
-        self.label.setPixmap(QtGui.QPixmap(":/DuagonLogo/duagon-logo-seethru.png"))
+        self.label.setPixmap(QtGui.QPixmap(":/Images/Images/duagon-logo-seethru.png"))
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setObjectName("label")
         self.actionrunStuff = QtWidgets.QAction(Dialog)
@@ -123,7 +124,7 @@ class Ui_Dialog(object):
         self.fileSelect.setText(_translate("Dialog", "Select directory"))
         self.goButton.setText(_translate("Dialog", "Load kernel"))
         self.actionrunStuff.setText(_translate("Dialog", "runStuff"))
-import ImageSources
+import ImageSources_rc
 
 
 if __name__ == "__main__":
