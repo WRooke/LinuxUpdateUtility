@@ -26,7 +26,7 @@ import serial.tools.list_ports
 import tftpy  # TFTP package
 
 # GUI package and components
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import pyqtSignal, QObject, QThread, Qt
 from PyQt5.QtWidgets import QFileDialog, QDialog
 
@@ -612,8 +612,22 @@ class MainWindowUIClass(Ui_Dialog, QObject):
         # Intended to re-populate COM port list when clicked
         self.COMPort.view().pressed.connect(self.populateComPort)
 
+
+        # Creates an event filter for the COMPort dropdown list
+        # Used to repopulate list on click
+        # Calls function eventFilter
+        self.COMPort.installEventFilter(self)
+
         # Populates COM port list on start-up
         self.populateComPort()
+
+    # Repopulates COMPort dropdown list when clicked
+    def eventFilter(self, target, event):
+        # If the COMPort gets clicked, run populate COMPort
+        if target == self.COMPort and event.type() == QtCore.QEvent.MouseButtonPress:
+            self.populateComPort()
+
+        return False
 
     # Populates the COM port list
     def populateComPort(self):
@@ -621,6 +635,7 @@ class MainWindowUIClass(Ui_Dialog, QObject):
 
         # Gets current attached COM ports, adds item in drop-down list for each port
         for comport in serial.tools.list_ports.comports():
+            self.COMPort.clear()
             self.COMPort.addItem("")
             self.COMPort.setItemText(count, QtWidgets.QApplication.translate("Dialog", comport.device))
             count += 1
