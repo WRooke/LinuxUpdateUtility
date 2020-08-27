@@ -20,7 +20,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>OEM PC2/PC3 Linux Kernel Update Utility 1.0</string>
+   <string>OEM PC2/PC3 Linux Kernel Update Utility 1.1</string>
   </property>
   <property name="windowIcon">
    <iconset resource="ImageSources.qrc">
@@ -49,39 +49,6 @@
       </property>
       <property name="text">
        <string>Controller IP address:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="label_3">
-      <property name="font">
-       <font>
-        <family>Franklin Gothic Medium</family>
-        <pointsize>11</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>RS232 serial port:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="0">
-     <widget class="QLabel" name="label_7">
-      <property name="font">
-       <font>
-        <family>Franklin Gothic Medium</family>
-        <pointsize>11</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>Linux kernel location:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QLineEdit" name="pathEdit">
-      <property name="text">
-       <string/>
       </property>
      </widget>
     </item>
@@ -114,32 +81,36 @@
       </property>
      </widget>
     </item>
-    <item row="3" column="1">
-     <widget class="QLineEdit" name="PCIP">
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>20</height>
-       </size>
-      </property>
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_3">
       <property name="font">
        <font>
-        <family>Calibri</family>
+        <family>Franklin Gothic Medium</family>
         <pointsize>11</pointsize>
        </font>
       </property>
+      <property name="text">
+       <string>RS232 serial port:</string>
+      </property>
      </widget>
     </item>
-    <item row="3" column="4">
-     <widget class="QPushButton" name="about">
-      <property name="minimumSize">
-       <size>
-        <width>85</width>
-        <height>0</height>
-       </size>
+    <item row="0" column="1">
+     <widget class="QLineEdit" name="pathEdit">
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="label_7">
+      <property name="font">
+       <font>
+        <family>Franklin Gothic Medium</family>
+        <pointsize>11</pointsize>
+       </font>
       </property>
       <property name="text">
-       <string>About</string>
+       <string>Linux kernel location:</string>
       </property>
      </widget>
     </item>
@@ -162,6 +133,35 @@
       </property>
      </widget>
     </item>
+    <item row="3" column="4">
+     <widget class="QPushButton" name="about">
+      <property name="minimumSize">
+       <size>
+        <width>85</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>About</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QLineEdit" name="PCIP">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>20</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>Calibri</family>
+        <pointsize>11</pointsize>
+       </font>
+      </property>
+     </widget>
+    </item>
     <item row="0" column="4">
      <widget class="QPushButton" name="goButton">
       <property name="enabled">
@@ -175,6 +175,19 @@
       </property>
       <property name="text">
        <string>Load kernel</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="4">
+     <widget class="QCheckBox" name="prodMode">
+      <property name="maximumSize">
+       <size>
+        <width>100</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Production mode</string>
       </property>
      </widget>
     </item>
@@ -211,6 +224,7 @@
   <tabstop>COMPort</tabstop>
   <tabstop>conIP</tabstop>
   <tabstop>PCIP</tabstop>
+  <tabstop>prodMode</tabstop>
   <tabstop>goButton</tabstop>
   <tabstop>about</tabstop>
  </tabstops>

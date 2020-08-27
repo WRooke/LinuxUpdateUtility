@@ -176,16 +176,21 @@ class UpdateThread(QThread):
     # Signal to open pop-up success/error window
     loadPopup = pyqtSignal()
 
-    # Signal to close pop-up success/error window
+    # Signal to open progress bar
     openProg = pyqtSignal()
 
+    # Signal to close pop-up success/error window
+    closePopup = pyqtSignal()
+
+
     # Class takes strings on init, used to save IP addresses, COM port and Kernel Path for use in thread
-    def __init__(self, COMPort, conIP, PCIP, pathEdit):
+    def __init__(self, COMPort, conIP, PCIP, pathEdit, prodMode):
         QThread.__init__(self)
         self.COMPort = COMPort
         self.conIP = conIP
         self.PCIP = PCIP
         self.pathEdit = pathEdit
+        self.prodMode = prodMode
 
     # Function is run on thread start
     def run(self):
@@ -200,7 +205,7 @@ class UpdateThread(QThread):
             ser.close()
 
             # Call runUpdate and pass serial object, IP addresses and kernel path
-            self.runUpdate(ser, self.conIP, self.PCIP, self.pathEdit)
+            self.runUpdate(ser, self.conIP, self.PCIP, self.pathEdit, self.prodMode)
 
             # If no exceptions are raised, emit signal errorMessage to display success image and message
             self.errorMessage.emit("Success", "Kernel loaded successfully\nController IP address is: " + self.conIP,
@@ -385,7 +390,7 @@ class UpdateThread(QThread):
     # Main kernel update function
     # Takes IP address strings of controller and PC, string of kernel path given to GUI,
     # and serial object defined in run()
-    def runUpdate(self, serialObject, conIP, PCIP, kernelPath):
+    def runUpdate(self, serialObject, conIP, PCIP, kernelPath, prodMode):
 
         # Check if IP addresses are valid
         test = ipaddress.IPv4Address(conIP)
@@ -446,27 +451,36 @@ class UpdateThread(QThread):
         self.loadStatus.emit("Opening COM Port", 1)
         serialObject.open()
 
-        # Update progress bar and initialise SSH client
-        self.loadStatus.emit("Opening SSH connection", 2)
-        client = paramiko.SSHClient()
+        if prodMode:
+            # Prompt user to cycle power to the controller
+            self.errorMessage.emit("Input required", "Please cycle power to the controller",
+                                   False)
 
-        # If the SSH key is missing, auto-add it
-        # This ensures it won't throw an error if the key isn't found
-        # (which it never will be, unless this is run on the same controller with the same version of the kernel twice)
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        client.connect(conIP, username='root', password='Netsilicon')
+            # Open error/success pop-up window
+            self.loadPopup.emit()
 
-        # Open an SFTP protocol and copy network interface file to working directory
-        # This file will be loaded on again later to return all network settings to what they were before update
-        sftp = client.open_sftp()
-        sftp.get('/etc/network/interfaces', os.path.join(os.getcwd(), 'interfaces'))
+        else:
+            # Update progress bar and initialise SSH client
+            self.loadStatus.emit("Opening SSH connection", 2)
+            client = paramiko.SSHClient()
 
-        # Reboot controller by sending 'reboot' over SSH and update progress bar
-        self.loadStatus.emit("Rebooting", 3)
-        stdin, stdout, stderr = client.exec_command('reboot')
+            # If the SSH key is missing, auto-add it
+            # This ensures it won't throw an error if the key isn't found
+            # (which it never will be, unless this is run on the same controller with the same version of the kernel twice)
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            client.connect(conIP, username='root', password='Netsilicon')
 
-        # Close SSH client, no longer needed
-        client.close()
+            # Open an SFTP protocol and copy network interface file to working directory
+            # This file will be loaded on again later to return all network settings to what they were before update
+            sftp = client.open_sftp()
+            sftp.get('/etc/network/interfaces', os.path.join(os.getcwd(), 'interfaces'))
+
+            # Reboot controller by sending 'reboot' over SSH and update progress bar
+            self.loadStatus.emit("Rebooting", 3)
+            stdin, stdout, stderr = client.exec_command('reboot')
+
+            # Close SSH client, no longer needed
+            client.close()
 
         # Initialise string commands for updating the kernel
         # Found in kernel SRA
@@ -484,8 +498,15 @@ class UpdateThread(QThread):
         serialObject.reset_input_buffer()
         serialObject.reset_output_buffer()
 
+        if prodMode:
+            self.loadStatus.emit("Waiting for user input", 2)
         # Send tilde to interrupt boot sequence and access UBoot
         self.sendTilde(serialObject, timer)
+
+        if prodMode:
+            self.closePopup.emit()
+
+        self.loadStatus.emit("Sending TFTP update commands", 3)
 
         # Send TFTP update commands
         self.writeCommand(serialObject, update1, timer)
@@ -531,7 +552,7 @@ class UpdateThread(QThread):
         # Check for login prompt
         self.loginCheck(serialObject, timer)
 
-        # Update progress bar and rever timeout to default value
+        # Update progress bar and revert timeout to default value
         self.loadStatus.emit("Logging in", 6)
         timer.Timeout = 30
 
@@ -540,24 +561,25 @@ class UpdateThread(QThread):
         configstr = "ifconfig eth0 " + conIP + "\n"
         self.writeCommand(serialObject, configstr, timer)
 
-        # Open new SSH client, auto-add key and login
-        client2 = paramiko.SSHClient()
-        client2.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        client2.connect(conIP, username='root', password='Netsilicon')
+        if not prodMode:
+            # Open new SSH client, auto-add key and login
+            client2 = paramiko.SSHClient()
+            client2.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            client2.connect(conIP, username='root', password='Netsilicon')
 
-        # Open SFTP client, copy previous network interface file back to PLC and close SSH connection
-        sftp = client2.open_sftp()
-        sftp.put(os.path.join(os.getcwd(), 'interfaces'), '/etc/network/interfaces')
-        client2.close()
+            # Open SFTP client, copy previous network interface file back to PLC and close SSH connection
+            sftp = client2.open_sftp()
+            sftp.put(os.path.join(os.getcwd(), 'interfaces'), '/etc/network/interfaces')
+            client2.close()
 
-        # Update progress bar and reboot PLC
-        self.loadStatus.emit("Applying network settings", 8)
-        self.writeCommand(serialObject, 'reboot\n', timer)
+            # Update progress bar and reboot PLC
+            self.loadStatus.emit("Applying network settings", 8)
+            self.writeCommand(serialObject, 'reboot\n', timer)
 
-        # Send tilde to interrupt boot sequence, boot controller and login to linux
-        self.sendTilde(serialObject, timer)
-        self.writeCommand(serialObject, boot, timer)
-        self.loginCheck(serialObject, timer)
+            # Send tilde to interrupt boot sequence, boot controller and login to linux
+            self.sendTilde(serialObject, timer)
+            self.writeCommand(serialObject, boot, timer)
+            self.loginCheck(serialObject, timer)
 
         # Update progress bar, close serial connection, end TFTP server and close progress bar
         self.loadStatus.emit("Finishing up", 9)
@@ -608,11 +630,6 @@ class MainWindowUIClass(Ui_Dialog, QObject):
         # Opens about window
         self.about.clicked.connect(self.aboutwindow.opener)
 
-        # Currently non-functional
-        # Intended to re-populate COM port list when clicked
-        self.COMPort.view().pressed.connect(self.populateComPort)
-
-
         # Creates an event filter for the COMPort dropdown list
         # Used to repopulate list on click
         # Calls function eventFilter
@@ -652,7 +669,7 @@ class MainWindowUIClass(Ui_Dialog, QObject):
 
         # Initialise UpdateThread with necessary variables pulled from GUI user input
         updaterThread = UpdateThread(self.COMPort.currentText(), self.conIP.text(), self.PCIP.text(),
-                                     self.pathEdit.text())
+                                     self.pathEdit.text(), self.prodMode.isChecked())
 
         # Connect PyQt signals to GUI elements
         # Example: when signal 'openProg' is sent by the updater thread, run progress.opener, opening the progress bar
@@ -661,6 +678,7 @@ class MainWindowUIClass(Ui_Dialog, QObject):
         updaterThread.closeProg.connect(self.progress.closer)
         updaterThread.errorMessage.connect(self.popup.handle_error)
         updaterThread.loadPopup.connect(self.popup.opener)
+        updaterThread.closePopup.connect(self.popup.closer)
 
         # Start the update thread
         updaterThread.start()
