@@ -299,22 +299,25 @@ class UpdateThread(QThread):
 
         # Loop until UBoot command screen is registered
         while 1:
-
             # Send tilde and read output
             serialObject.write(command.encode())
             out = self.readTimeout(serialObject, timer)
+            print(out)
 
             # Send 'version' query and read output
             serialObject.write(query.encode())
             out = self.readTimeout(serialObject, timer)
+            print(out)
 
             # Use regex to find if UBoot command prompt has been reached
-            match = re.search('Colibri VFxx*.', out)
+            matchPM3004 = re.search('Colibri VFxx*.', out)
+            matchPM3003 = re.search('Colibri iMX6*.', out)
+            matchPM3005 = re.search('Colibri iMX6ULL*.', out)
 
             # If the command prompt has been reached, read 10 lines from the serial object
             # send a newline, and read another 10 lines
             # This ensures that both input and output have no remaining data in them
-            if match:
+            if matchPM3004 or matchPM3003 or matchPM3005:
                 for i in range(10):
                     out = self.readTimeout(serialObject, timer)
 
@@ -332,6 +335,7 @@ class UpdateThread(QThread):
 
         # Read whatever is given back by the serial device
         out = self.readTimeout(serialObject, timer)
+        print(out)
 
         # Wait for 0.2s, avoids commands running into each other
         time.sleep(0.2)
@@ -341,7 +345,7 @@ class UpdateThread(QThread):
     def readTimeout(self, serialObject, timer):
 
         # Read from the serial port
-        out = serialObject.readline().decode()
+        out = serialObject.readline().decode('utf-8', 'ignore')
 
         # If no data is read, either start the timer or check the timer
         if out == '':
@@ -370,7 +374,7 @@ class UpdateThread(QThread):
             # 'iecTeso version' was chosen as it always immediately precedes the login prompt,
             # removing the need to poll for the login screen
             out = self.readTimeout(serialObject, timer)
-            matchLogin = re.search('.*iecTeso version.*', out)
+            matchLogin = re.search('.*login.*', out)
             if matchLogin:
 
                 # If the login screen is found, clear input and output by reading 10 lines, sending a newline,
@@ -386,6 +390,7 @@ class UpdateThread(QThread):
         # Send username and password
         self.writeCommand(serialObject, 'root\n', timer)
         self.writeCommand(serialObject, 'Netsilicon\n', timer)
+
 
     # Main kernel update function
     # Takes IP address strings of controller and PC, string of kernel path given to GUI,
@@ -485,19 +490,25 @@ class UpdateThread(QThread):
         # Initialise string commands for updating the kernel
         # Found in kernel SRA
         boot = 'boot\n'
-        update1 = "setenv serverip " + PCIP + "\n"
-        update2 = "setenv ipaddr " + conIP + "\n"
-        update3 = "setenv setupdate 'tftpboot ${loadaddr} ${serverip}:flash_eth.img && source ${loadaddr}'\n"
-        update4 = "saveenv\n"
-        update5 = "run setupdate\n"
-        update6 = "run update\n"
         newline = '\n'
+        commandList = []
+        update6 = "run update\n"
         out = ''
+        if PM3004Files or PM3003Files:
+            commandList.append("setenv serverip " + PCIP + "\n")
+            commandList.append("setenv ipaddr " + conIP + "\n")
+            commandList.append("tftpboot ${loadaddr} ${serverip}:flash_eth.img && source ${loadaddr}\n")
+
+        elif PM3005Files:
+            commandList.append("setenv soc imx6ull\n")
+            commandList.append("saveenv\n")
+            commandList.append("setenv serverip " + PCIP + "\n")
+            commandList.append("setenv ipaddr " + conIP + "\n")
+            commandList.append("tftpboot ${loadaddr} ${serverip}:flash_eth.img && source ${loadaddr}\n")
 
         # Not sure if these do anything, may remove in later update
-        serialObject.reset_input_buffer()
-        serialObject.reset_output_buffer()
-
+        # serialObject.reset_input_buffer()
+        # serialObject.reset_output_buffer()
         if prodMode:
             self.loadStatus.emit("Waiting for user input", 2)
         # Send tilde to interrupt boot sequence and access UBoot
@@ -509,15 +520,13 @@ class UpdateThread(QThread):
         self.loadStatus.emit("Sending TFTP update commands", 3)
 
         # Send TFTP update commands
-        self.writeCommand(serialObject, update1, timer)
-        self.writeCommand(serialObject, update2, timer)
-        self.writeCommand(serialObject, update3, timer)
-        self.writeCommand(serialObject, update4, timer)
+        for updateString in commandList:
+            self.writeCommand(serialObject, updateString, timer)
 
         # Send 'run setupdate' command and wait for 'enter run update prompt'
         # This is done differently to the previous commands as it doesn't process instantly
         # When 'enter run update' is found, send 'run update' command
-        serialObject.write(update5.encode())
+        # serialObject.write(update5.encode())
         while 1:
             out = self.readTimeout(serialObject, timer)
             matchUpdate = re.search('enter "run update"*.', out)
@@ -586,6 +595,7 @@ class UpdateThread(QThread):
         serialObject.close()
         tftpObject.ServerKill()
         self.closeProg.emit()
+        self.loadStatus.emit("Starting", 0)
         return True
 
 
