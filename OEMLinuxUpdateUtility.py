@@ -26,7 +26,7 @@ import serial.tools.list_ports
 import tftpy  # TFTP package
 
 # GUI package and components
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import pyqtSignal, QObject, QThread, Qt
 from PyQt5.QtWidgets import QFileDialog, QDialog
 
@@ -176,16 +176,21 @@ class UpdateThread(QThread):
     # Signal to open pop-up success/error window
     loadPopup = pyqtSignal()
 
-    # Signal to close pop-up success/error window
+    # Signal to open progress bar
     openProg = pyqtSignal()
 
+    # Signal to close pop-up success/error window
+    closePopup = pyqtSignal()
+
+
     # Class takes strings on init, used to save IP addresses, COM port and Kernel Path for use in thread
-    def __init__(self, COMPort, conIP, PCIP, pathEdit):
+    def __init__(self, COMPort, conIP, PCIP, pathEdit, prodMode):
         QThread.__init__(self)
         self.COMPort = COMPort
         self.conIP = conIP
         self.PCIP = PCIP
         self.pathEdit = pathEdit
+        self.prodMode = prodMode
 
     # Function is run on thread start
     def run(self):
@@ -200,7 +205,7 @@ class UpdateThread(QThread):
             ser.close()
 
             # Call runUpdate and pass serial object, IP addresses and kernel path
-            self.runUpdate(ser, self.conIP, self.PCIP, self.pathEdit)
+            self.runUpdate(ser, self.conIP, self.PCIP, self.pathEdit, self.prodMode)
 
             # If no exceptions are raised, emit signal errorMessage to display success image and message
             self.errorMessage.emit("Success", "Kernel loaded successfully\nController IP address is: " + self.conIP,
@@ -294,22 +299,25 @@ class UpdateThread(QThread):
 
         # Loop until UBoot command screen is registered
         while 1:
-
             # Send tilde and read output
             serialObject.write(command.encode())
             out = self.readTimeout(serialObject, timer)
+            print(out)
 
             # Send 'version' query and read output
             serialObject.write(query.encode())
             out = self.readTimeout(serialObject, timer)
+            print(out)
 
             # Use regex to find if UBoot command prompt has been reached
-            match = re.search('Colibri VFxx*.', out)
+            matchPM3004 = re.search('Colibri VFxx*.', out)
+            matchPM3003 = re.search('Colibri iMX6*.', out)
+            matchPM3005 = re.search('Colibri iMX6ULL*.', out)
 
             # If the command prompt has been reached, read 10 lines from the serial object
             # send a newline, and read another 10 lines
             # This ensures that both input and output have no remaining data in them
-            if match:
+            if matchPM3004 or matchPM3003 or matchPM3005:
                 for i in range(10):
                     out = self.readTimeout(serialObject, timer)
 
@@ -327,6 +335,7 @@ class UpdateThread(QThread):
 
         # Read whatever is given back by the serial device
         out = self.readTimeout(serialObject, timer)
+        print(out)
 
         # Wait for 0.2s, avoids commands running into each other
         time.sleep(0.2)
@@ -336,7 +345,7 @@ class UpdateThread(QThread):
     def readTimeout(self, serialObject, timer):
 
         # Read from the serial port
-        out = serialObject.readline().decode()
+        out = serialObject.readline().decode('utf-8', 'ignore')
 
         # If no data is read, either start the timer or check the timer
         if out == '':
@@ -365,7 +374,7 @@ class UpdateThread(QThread):
             # 'iecTeso version' was chosen as it always immediately precedes the login prompt,
             # removing the need to poll for the login screen
             out = self.readTimeout(serialObject, timer)
-            matchLogin = re.search('.*iecTeso version.*', out)
+            matchLogin = re.search('.*login.*', out)
             if matchLogin:
 
                 # If the login screen is found, clear input and output by reading 10 lines, sending a newline,
@@ -382,10 +391,11 @@ class UpdateThread(QThread):
         self.writeCommand(serialObject, 'root\n', timer)
         self.writeCommand(serialObject, 'Netsilicon\n', timer)
 
+
     # Main kernel update function
     # Takes IP address strings of controller and PC, string of kernel path given to GUI,
     # and serial object defined in run()
-    def runUpdate(self, serialObject, conIP, PCIP, kernelPath):
+    def runUpdate(self, serialObject, conIP, PCIP, kernelPath, prodMode):
 
         # Check if IP addresses are valid
         test = ipaddress.IPv4Address(conIP)
@@ -401,10 +411,34 @@ class UpdateThread(QThread):
 
         # Ensure path actually contains all necessary kernel files
         # NOTE: DOES NOT CHECK CONTENTS, ONLY CHECKS IF THEY EXIST
-        if os.path.isfile(os.path.join(newpath, 'ubifs.img')) and os.path.isfile(
-              os.path.join(newpath, 'flash_mmc.img')) and os.path.isfile(
-            os.path.join(newpath, 'flash_eth.img')) and os.path.isfile(
-            os.path.join(newpath, 'flash_blk.img')) and os.path.isfile(os.path.join(newpath, 'configblock.bin')):
+
+        PM3004Files = (os.path.isfile(os.path.join(newpath, 'ubifs.img')) and
+                       os.path.isfile(os.path.join(newpath, 'flash_mmc.img')) and
+                       os.path.isfile(os.path.join(newpath, 'flash_eth.img')) and
+                       os.path.isfile(os.path.join(newpath, 'flash_blk.img')) and
+                       os.path.isfile(os.path.join(newpath, 'u-boot-nand.imx')) and
+                       os.path.isfile(os.path.join(newpath, 'configblock.bin')))
+
+        PM3003Files = (os.path.isfile(os.path.join(newpath, 'boot.vfat')) and
+                       os.path.isfile(os.path.join(newpath, 'flash_mmc.img')) and
+                       os.path.isfile(os.path.join(newpath, 'flash_eth.img')) and
+                       os.path.isfile(os.path.join(newpath, 'flash_blk.img')) and
+                       os.path.isfile(os.path.join(newpath, 'mbr.bin')) and
+                       os.path.isfile(os.path.join(newpath, 'imx6dl-colibri-eval-v3.dtb')) and
+                       os.path.isfile(os.path.join(newpath, 'root.ext3')) and
+                       os.path.isfile(os.path.join(newpath, 'root.ext3-0')) and
+                       os.path.isfile(os.path.join(newpath, 'root.ext3-1')) and
+                       os.path.isfile(os.path.join(newpath, 'u-boot.imx')) and
+                       os.path.isfile(os.path.join(newpath, 'uImage')))
+
+        PM3005Files = (os.path.isfile(os.path.join(newpath, 'ubifs.img')) and
+                       os.path.isfile(os.path.join(newpath, 'flash_eth.img')) and
+                       os.path.isfile(os.path.join(newpath, 'flash_blk.img')) and
+                       os.path.isfile(os.path.join(newpath, 'imx6ull-colibri-wifi-eval-v3.dtb')) and
+                       os.path.isfile(os.path.join(newpath, 'u-boot-nand.imx')) and
+                       os.path.isfile(os.path.join(newpath, 'zImage')))
+
+        if PM3003Files or PM3004Files or PM3005Files:
             pass
         else:
             raise InvalidDir
@@ -422,57 +456,77 @@ class UpdateThread(QThread):
         self.loadStatus.emit("Opening COM Port", 1)
         serialObject.open()
 
-        # Update progress bar and initialise SSH client
-        self.loadStatus.emit("Opening SSH connection", 2)
-        client = paramiko.SSHClient()
+        if prodMode:
+            # Prompt user to cycle power to the controller
+            self.errorMessage.emit("Input required", "Please cycle power to the controller",
+                                   False)
 
-        # If the SSH key is missing, auto-add it
-        # This ensures it won't throw an error if the key isn't found
-        # (which it never will be, unless this is run on the same controller with the same version of the kernel twice)
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        client.connect(conIP, username='root', password='Netsilicon')
+            # Open error/success pop-up window
+            self.loadPopup.emit()
 
-        # Open an SFTP protocol and copy network interface file to working directory
-        # This file will be loaded on again later to return all network settings to what they were before update
-        sftp = client.open_sftp()
-        sftp.get('/etc/network/interfaces', os.path.join(os.getcwd(), 'interfaces'))
+        else:
+            # Update progress bar and initialise SSH client
+            self.loadStatus.emit("Opening SSH connection", 2)
+            client = paramiko.SSHClient()
 
-        # Reboot controller by sending 'reboot' over SSH and update progress bar
-        self.loadStatus.emit("Rebooting", 3)
-        stdin, stdout, stderr = client.exec_command('reboot')
+            # If the SSH key is missing, auto-add it
+            # This ensures it won't throw an error if the key isn't found
+            # (which it never will be, unless this is run on the same controller with the same version of the kernel twice)
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            client.connect(conIP, username='root', password='Netsilicon')
 
-        # Close SSH client, no longer needed
-        client.close()
+            # Open an SFTP protocol and copy network interface file to working directory
+            # This file will be loaded on again later to return all network settings to what they were before update
+            sftp = client.open_sftp()
+            sftp.get('/etc/network/interfaces', os.path.join(os.getcwd(), 'interfaces'))
+
+            # Reboot controller by sending 'reboot' over SSH and update progress bar
+            self.loadStatus.emit("Rebooting", 3)
+            stdin, stdout, stderr = client.exec_command('reboot')
+
+            # Close SSH client, no longer needed
+            client.close()
 
         # Initialise string commands for updating the kernel
         # Found in kernel SRA
         boot = 'boot\n'
-        update1 = "setenv serverip " + PCIP + "\n"
-        update2 = "setenv ipaddr " + conIP + "\n"
-        update3 = "setenv setupdate 'tftpboot ${loadaddr} ${serverip}:flash_eth.img && source ${loadaddr}'\n"
-        update4 = "saveenv\n"
-        update5 = "run setupdate\n"
-        update6 = "run update\n"
         newline = '\n'
+        commandList = []
+        update6 = "run update\n"
         out = ''
+        if PM3004Files or PM3003Files:
+            commandList.append("setenv serverip " + PCIP + "\n")
+            commandList.append("setenv ipaddr " + conIP + "\n")
+            commandList.append("tftpboot ${loadaddr} ${serverip}:flash_eth.img && source ${loadaddr}\n")
+
+        elif PM3005Files:
+            commandList.append("setenv soc imx6ull\n")
+            commandList.append("saveenv\n")
+            commandList.append("setenv serverip " + PCIP + "\n")
+            commandList.append("setenv ipaddr " + conIP + "\n")
+            commandList.append("tftpboot ${loadaddr} ${serverip}:flash_eth.img && source ${loadaddr}\n")
 
         # Not sure if these do anything, may remove in later update
-        serialObject.reset_input_buffer()
-        serialObject.reset_output_buffer()
-
+        # serialObject.reset_input_buffer()
+        # serialObject.reset_output_buffer()
+        if prodMode:
+            self.loadStatus.emit("Waiting for user input", 2)
         # Send tilde to interrupt boot sequence and access UBoot
         self.sendTilde(serialObject, timer)
 
+        if prodMode:
+            self.closePopup.emit()
+
+        self.loadStatus.emit("Sending TFTP update commands", 3)
+
         # Send TFTP update commands
-        self.writeCommand(serialObject, update1, timer)
-        self.writeCommand(serialObject, update2, timer)
-        self.writeCommand(serialObject, update3, timer)
-        self.writeCommand(serialObject, update4, timer)
+        for updateString in commandList:
+            self.writeCommand(serialObject, updateString, timer)
 
         # Send 'run setupdate' command and wait for 'enter run update prompt'
         # This is done differently to the previous commands as it doesn't process instantly
         # When 'enter run update' is found, send 'run update' command
-        serialObject.write(update5.encode())
+        # serialObject.write(update5.encode())
         while 1:
             out = self.readTimeout(serialObject, timer)
             matchUpdate = re.search('enter "run update"*.', out)
@@ -507,7 +561,7 @@ class UpdateThread(QThread):
         # Check for login prompt
         self.loginCheck(serialObject, timer)
 
-        # Update progress bar and rever timeout to default value
+        # Update progress bar and revert timeout to default value
         self.loadStatus.emit("Logging in", 6)
         timer.Timeout = 30
 
@@ -516,30 +570,32 @@ class UpdateThread(QThread):
         configstr = "ifconfig eth0 " + conIP + "\n"
         self.writeCommand(serialObject, configstr, timer)
 
-        # Open new SSH client, auto-add key and login
-        client2 = paramiko.SSHClient()
-        client2.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        client2.connect(conIP, username='root', password='Netsilicon')
+        if not prodMode:
+            # Open new SSH client, auto-add key and login
+            client2 = paramiko.SSHClient()
+            client2.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            client2.connect(conIP, username='root', password='Netsilicon')
 
-        # Open SFTP client, copy previous network interface file back to PLC and close SSH connection
-        sftp = client2.open_sftp()
-        sftp.put(os.path.join(os.getcwd(), 'interfaces'), '/etc/network/interfaces')
-        client2.close()
+            # Open SFTP client, copy previous network interface file back to PLC and close SSH connection
+            sftp = client2.open_sftp()
+            sftp.put(os.path.join(os.getcwd(), 'interfaces'), '/etc/network/interfaces')
+            client2.close()
 
-        # Update progress bar and reboot PLC
-        self.loadStatus.emit("Applying network settings", 8)
-        self.writeCommand(serialObject, 'reboot\n', timer)
+            # Update progress bar and reboot PLC
+            self.loadStatus.emit("Applying network settings", 8)
+            self.writeCommand(serialObject, 'reboot\n', timer)
 
-        # Send tilde to interrupt boot sequence, boot controller and login to linux
-        self.sendTilde(serialObject, timer)
-        self.writeCommand(serialObject, boot, timer)
-        self.loginCheck(serialObject, timer)
+            # Send tilde to interrupt boot sequence, boot controller and login to linux
+            self.sendTilde(serialObject, timer)
+            self.writeCommand(serialObject, boot, timer)
+            self.loginCheck(serialObject, timer)
 
         # Update progress bar, close serial connection, end TFTP server and close progress bar
         self.loadStatus.emit("Finishing up", 9)
         serialObject.close()
         tftpObject.ServerKill()
         self.closeProg.emit()
+        self.loadStatus.emit("Starting", 0)
         return True
 
 
@@ -584,12 +640,21 @@ class MainWindowUIClass(Ui_Dialog, QObject):
         # Opens about window
         self.about.clicked.connect(self.aboutwindow.opener)
 
-        # Currently non-functional
-        # Intended to re-populate COM port list when clicked
-        self.COMPort.view().pressed.connect(self.populateComPort)
+        # Creates an event filter for the COMPort dropdown list
+        # Used to repopulate list on click
+        # Calls function eventFilter
+        self.COMPort.installEventFilter(self)
 
         # Populates COM port list on start-up
         self.populateComPort()
+
+    # Repopulates COMPort dropdown list when clicked
+    def eventFilter(self, target, event):
+        # If the COMPort gets clicked, run populate COMPort
+        if target == self.COMPort and event.type() == QtCore.QEvent.MouseButtonPress:
+            self.populateComPort()
+
+        return False
 
     # Populates the COM port list
     def populateComPort(self):
@@ -597,6 +662,7 @@ class MainWindowUIClass(Ui_Dialog, QObject):
 
         # Gets current attached COM ports, adds item in drop-down list for each port
         for comport in serial.tools.list_ports.comports():
+            self.COMPort.clear()
             self.COMPort.addItem("")
             self.COMPort.setItemText(count, QtWidgets.QApplication.translate("Dialog", comport.device))
             count += 1
@@ -613,7 +679,7 @@ class MainWindowUIClass(Ui_Dialog, QObject):
 
         # Initialise UpdateThread with necessary variables pulled from GUI user input
         updaterThread = UpdateThread(self.COMPort.currentText(), self.conIP.text(), self.PCIP.text(),
-                                     self.pathEdit.text())
+                                     self.pathEdit.text(), self.prodMode.isChecked())
 
         # Connect PyQt signals to GUI elements
         # Example: when signal 'openProg' is sent by the updater thread, run progress.opener, opening the progress bar
@@ -622,6 +688,7 @@ class MainWindowUIClass(Ui_Dialog, QObject):
         updaterThread.closeProg.connect(self.progress.closer)
         updaterThread.errorMessage.connect(self.popup.handle_error)
         updaterThread.loadPopup.connect(self.popup.opener)
+        updaterThread.closePopup.connect(self.popup.closer)
 
         # Start the update thread
         updaterThread.start()
