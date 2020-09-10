@@ -302,12 +302,10 @@ class UpdateThread(QThread):
             # Send tilde and read output
             serialObject.write(command.encode())
             out = self.readTimeout(serialObject, timer)
-            print(out)
 
             # Send 'version' query and read output
             serialObject.write(query.encode())
             out = self.readTimeout(serialObject, timer)
-            print(out)
 
             # Use regex to find if UBoot command prompt has been reached
             matchPM3004 = re.search('Colibri VFxx*.', out)
@@ -335,7 +333,6 @@ class UpdateThread(QThread):
 
         # Read whatever is given back by the serial device
         out = self.readTimeout(serialObject, timer)
-        print(out)
 
         # Wait for 0.2s, avoids commands running into each other
         time.sleep(0.2)
